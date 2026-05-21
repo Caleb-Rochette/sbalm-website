@@ -15,7 +15,45 @@ function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+function esc(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+}
+
+// In-memory rate limit: max 3 submissions per IP per 10 minutes
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT = 3;
+const RATE_WINDOW_MS = 10 * 60 * 1000;
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    return false;
+  }
+  if (entry.count >= RATE_LIMIT) return true;
+  entry.count++;
+  return false;
+}
+
 export async function POST(req: NextRequest) {
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    req.headers.get("x-real-ip") ??
+    "unknown";
+
+  if (isRateLimited(ip)) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later or call us at 253-523-3755." },
+      { status: 429 }
+    );
+  }
+
   let body: ContactPayload;
 
   try {
@@ -55,12 +93,21 @@ export async function POST(req: NextRequest) {
     day: "numeric",
   });
 
+  const safeName        = esc(name.trim());
+  const safePhone       = esc(phone.trim());
+  const safeEmail       = esc(email.trim());
+  const safeMoveSize    = esc(moveSize);
+  const safeServiceType = esc(serviceType);
+  const safeMessage     = message?.trim() ? esc(message.trim()) : "";
+  const safeDate        = esc(formattedDate);
+  const phoneDigits     = phone.replace(/\D/g, "").replace(/[^0-9]/g, "");
+
   try {
     await resend.emails.send({
       from: fromEmail,
       to: toEmail,
       replyTo: email,
-      subject: `New Quote Request — ${name} (${moveSize}, ${formattedDate})`,
+      subject: `New Quote Request — ${safeName} (${safeMoveSize}, ${safeDate})`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #111827;">
           <div style="background: #0F2744; padding: 24px 32px; border-radius: 12px 12px 0 0;">
@@ -72,43 +119,43 @@ export async function POST(req: NextRequest) {
             <table style="width: 100%; border-collapse: collapse;">
               <tr>
                 <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-weight: 600; width: 40%; color: #0F2744;">Name</td>
-                <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6;">${name}</td>
+                <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6;">${safeName}</td>
               </tr>
               <tr>
                 <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-weight: 600; color: #0F2744;">Phone</td>
                 <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6;">
-                  <a href="tel:${phone.replace(/\D/g, "")}" style="color: #E8A020;">${phone}</a>
+                  <a href="tel:${phoneDigits}" style="color: #E8A020;">${safePhone}</a>
                 </td>
               </tr>
               <tr>
                 <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-weight: 600; color: #0F2744;">Email</td>
                 <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6;">
-                  <a href="mailto:${email}" style="color: #E8A020;">${email}</a>
+                  <a href="mailto:${safeEmail}" style="color: #E8A020;">${safeEmail}</a>
                 </td>
               </tr>
               <tr>
                 <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-weight: 600; color: #0F2744;">Move Date</td>
-                <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6;">${formattedDate}</td>
+                <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6;">${safeDate}</td>
               </tr>
               <tr>
                 <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-weight: 600; color: #0F2744;">Home Size</td>
-                <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6;">${moveSize}</td>
+                <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6;">${safeMoveSize}</td>
               </tr>
               <tr>
                 <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-weight: 600; color: #0F2744;">Service Needed</td>
-                <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6;">${serviceType}</td>
+                <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6;">${safeServiceType}</td>
               </tr>
               ${
-                message?.trim()
+                safeMessage
                   ? `<tr>
                       <td style="padding: 10px 0; font-weight: 600; vertical-align: top; color: #0F2744;">Notes</td>
-                      <td style="padding: 10px 0; white-space: pre-wrap;">${message.trim()}</td>
+                      <td style="padding: 10px 0; white-space: pre-wrap;">${safeMessage}</td>
                     </tr>`
                   : ""
               }
             </table>
             <div style="margin-top: 24px; padding: 16px; background: #FDF8F0; border-radius: 8px; font-size: 13px; color: #6B7280;">
-              Reply to this email to respond directly to ${name}.
+              Reply to this email to respond directly to ${safeName}.
             </div>
           </div>
         </div>

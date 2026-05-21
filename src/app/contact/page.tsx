@@ -95,7 +95,6 @@ export default function ContactPage() {
                     "Response within a few hours",
                     "No-pressure quote, no obligation",
                     "2-hour minimum, 15-min increments",
-                    "No fuel surcharges or hidden fees",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2 text-sm text-brand-stoneDark">
                       <span className="text-brand-orange font-bold shrink-0">✓</span>

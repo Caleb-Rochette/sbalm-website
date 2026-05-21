@@ -117,8 +117,8 @@ export default function ServiceAreaPage() {
             {[
               {
                 icon: "🗺️",
-                title: "No Travel Fees Within Our Area",
-                body: "We do not charge travel or fuel surcharges for jobs within our standard service area. You pay only for your crew's labor time.",
+                title: "No Extra Travel Charges",
+                body: "We do not charge for travel within our standard service area. You pay only for your crew's labor time.",
               },
               {
                 icon: "📅",

@@ -30,7 +30,7 @@ const trustPoints = [
   {
     icon: "💵",
     headline: "Fair, transparent billing — no surprises.",
-    body: "2-hour minimum, 15-min increments, no hidden fees.",
+    body: "2-hour minimum, 15-min increments.",
   },
 ];
 
@@ -89,7 +89,7 @@ export default function HomePage() {
               </a>
             </div>
             <p className="mt-6 text-sm text-brand-mist">
-              2-hour minimum · No fuel surcharges · Labor only
+              2-hour minimum · Labor only
             </p>
           </div>
         </div>
@@ -118,7 +118,7 @@ export default function HomePage() {
               {
                 step: "03",
                 title: "Pay Only for Time Worked",
-                body: "Two-hour minimum, then billed in 15-minute increments. No fuel surcharges. No hidden fees. Just honest labor.",
+                body: "Two-hour minimum, then billed in 15-minute increments. Just honest labor.",
               },
             ].map(({ step, title, body }) => (
               <div key={step} className="relative bg-brand-paper rounded-2xl p-8 shadow-sm border border-brand-stoneLight">
@@ -139,7 +139,7 @@ export default function HomePage() {
           <SectionHeader
             eyebrow="Pricing"
             heading="Straightforward Rates"
-            subheading="No hidden fees. No fuel surcharges. Just honest labor."
+            subheading="Just honest labor."
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
             <PricingCard
@@ -150,7 +150,6 @@ export default function HomePage() {
                 "2-hour minimum",
                 "15-min billing increments after",
                 "Loading and/or unloading",
-                "No fuel surcharges",
               ]}
             />
             <PricingCard

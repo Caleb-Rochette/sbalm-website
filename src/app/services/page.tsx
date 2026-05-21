@@ -131,7 +131,7 @@ export default function ServicesPage() {
           <SectionHeader
             eyebrow="Pricing"
             heading="Simple, Honest Rates"
-            subheading="2-hour minimum. 15-minute increments after that. No fuel surcharges, ever."
+            subheading="2-hour minimum. 15-minute increments after that."
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
             <PricingCard
@@ -142,8 +142,6 @@ export default function ServicesPage() {
                 "2-hour minimum",
                 "15-min billing increments after",
                 "Loading and/or unloading",
-                "No fuel surcharges",
-                "No hidden fees",
               ]}
             />
             <PricingCard
@@ -156,7 +154,6 @@ export default function ServicesPage() {
                 "15-min billing increments after",
                 "Loading and/or unloading",
                 "Faster for 3BR+ homes",
-                "No hidden fees",
               ]}
             />
           </div>
@@ -177,8 +174,8 @@ export default function ServicesPage() {
                   a: "We have a 2-hour minimum. After the first 2 hours, we bill in 15-minute increments.",
                 },
                 {
-                  q: "Are there any extra fees?",
-                  a: "No. No fuel surcharges, no travel fees within our service area, no surprise add-ons. What you see is what you pay.",
+                  q: "Are there any surprise charges?",
+                  a: "Never. You pay for labor time — that's it. If you'd like us to arrange the truck, we can do that too, and any rental cost passes straight through to you at no markup.",
                 },
                 {
                   q: "Which crew size should I book?",

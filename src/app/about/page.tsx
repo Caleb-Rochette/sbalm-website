@@ -28,7 +28,7 @@ const trustPoints = [
   {
     icon: "💵",
     headline: "Fair, transparent billing — no surprises.",
-    body: "2-hour minimum, 15-min increments, no hidden fees.",
+    body: "2-hour minimum, 15-min increments.",
   },
 ];
 
