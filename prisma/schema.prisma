@@ -1,0 +1,183 @@
+// CRM ONLY — not accessible to public
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  STAFF
+}
+
+enum CustomerStatus {
+  LEAD
+  BOOKED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum CustomerSource {
+  WEBSITE_FORM
+  WEBSITE_CHAT
+  PHONE_CALL
+  REFERRAL
+  GOOGLE
+  OTHER
+}
+
+enum JobStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum ServiceType {
+  LOADING_UNLOADING
+  PACKING
+  BOTH
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum QuoteStatus {
+  SENT
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+enum InteractionType {
+  CALL
+  TEXT
+  EMAIL
+  IN_PERSON
+  NOTE
+}
+
+model User {
+  id                  String    @id @default(uuid())
+  email               String    @unique
+  hashedPassword      String
+  name                String
+  role                UserRole  @default(STAFF)
+  createdAt           DateTime  @default(now())
+  lastLoginAt         DateTime?
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+
+  interactions Interaction[]
+}
+
+model Customer {
+  id        String         @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String?
+  phone     String?
+  address   String?
+  notes     String?
+  source    CustomerSource @default(WEBSITE_FORM)
+  status    CustomerStatus @default(LEAD)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  jobs         Job[]
+  interactions Interaction[]
+  quotes       Quote[]
+}
+
+model Job {
+  id                 String      @id @default(uuid())
+  customerId         String
+  jobDate            DateTime
+  jobTime            String
+  crewSize           Int
+  serviceType        ServiceType
+  originAddress      String
+  destinationAddress String
+  estimatedHours     Float
+  actualHours        Float?
+  pricePerHour       Float
+  totalCharged       Float?
+  truckRentalCompany String?
+  status             JobStatus   @default(SCHEDULED)
+  notes              String?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  customer     Customer      @relation(fields: [customerId], references: [id])
+  employees    EmployeeJob[]
+  interactions Interaction[]
+}
+
+model EmployeeJob {
+  employeeId String
+  jobId      String
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+  job      Job      @relation(fields: [jobId], references: [id])
+
+  @@id([employeeId, jobId])
+}
+
+model Employee {
+  id        String         @id @default(uuid())
+  firstName String
+  lastName  String
+  phone     String?
+  email     String?
+  role      String
+  status    EmployeeStatus @default(ACTIVE)
+  hireDate  DateTime?
+  notes     String?
+
+  jobs EmployeeJob[]
+}
+
+model Interaction {
+  id          String          @id @default(uuid())
+  customerId  String
+  jobId       String?
+  type        InteractionType
+  summary     String
+  createdById String
+  createdAt   DateTime        @default(now())
+
+  customer  Customer @relation(fields: [customerId], references: [id])
+  job       Job?     @relation(fields: [jobId], references: [id])
+  createdBy User     @relation(fields: [createdById], references: [id])
+}
+
+model Quote {
+  id                 String      @id @default(uuid())
+  customerId         String
+  crewSize           Int
+  estimatedHours     Float
+  serviceType        ServiceType
+  originAddress      String
+  destinationAddress String
+  quotedPrice        Float
+  status             QuoteStatus @default(SENT)
+  notes              String?
+  createdAt          DateTime    @default(now())
+  expiresAt          DateTime?
+
+  customer Customer @relation(fields: [customerId], references: [id])
+}
+
+model BusinessSettings {
+  id            Int   @id @default(1)
+  rate2ManCrew  Float @default(125)
+  rate3ManCrew  Float @default(175)
+  minimumHours  Float @default(2)
+}

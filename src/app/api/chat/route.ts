@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { Resend } from "resend";
+import fs from "fs";
+import path from "path";
+import { addLead } from "@/lib/crm-store";
+import { prisma } from "@/lib/crm/db";
 
 export const runtime = "nodejs";
 
@@ -126,6 +130,59 @@ function isRateLimited(ip: string): boolean {
   return false;
 }
 
+type Msg = { role: string; content: string };
+
+function extractLeadInfo(messages: Msg[]) {
+  const allText = messages.map(m => m.content).join(" ");
+
+  const emailMatch = allText.match(/[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,}/);
+  const email = emailMatch?.[0] ?? null;
+
+  const phoneMatch = allText.match(/\b(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/);
+  const rawPhone = phoneMatch?.[0]?.replace(/\D/g, "").replace(/^1/, "") ?? null;
+  const phone = rawPhone ? `${rawPhone.slice(0,3)}-${rawPhone.slice(3,6)}-${rawPhone.slice(6)}` : null;
+
+  // Look for a user message that is just "First Last" — typical name reply
+  let firstName = "Chat";
+  let lastName  = "Lead";
+  for (const msg of messages) {
+    if (msg.role !== "user") continue;
+    const m = msg.content.trim().match(/^([A-ZÀ-ÖØ-öø-ÿ][a-zÀ-ÖØ-öø-ÿ'-]+)\s+([A-ZÀ-ÖØ-öø-ÿ][a-zÀ-ÖØ-öø-ÿ'-]+)$/);
+    if (m) { firstName = m[1]; lastName = m[2]; break; }
+  }
+
+  return { firstName, lastName, email, phone };
+}
+
+async function saveLeadToCRM(messages: Msg[], transcript: string) {
+  try {
+    const { firstName, lastName, email, phone } = extractLeadInfo(messages);
+    await prisma.customer.create({
+      data: {
+        firstName,
+        lastName,
+        email,
+        phone,
+        source: "WEBSITE_CHAT",
+        status: "LEAD",
+        notes: `Chat transcript:\n\n${transcript}`,
+      },
+    });
+  } catch (e) {
+    console.error("CRM lead save error:", e);
+  }
+}
+
+function saveLeadToFile(transcript: string) {
+  try {
+    const logFile = path.join(process.cwd(), "leads.log");
+    const entry = `\n${"=".repeat(60)}\n${new Date().toISOString()}\n${"=".repeat(60)}\n${transcript}\n`;
+    fs.appendFileSync(logFile, entry, { encoding: "utf8", mode: 0o600 });
+  } catch (e) {
+    console.error("Lead file save error:", e);
+  }
+}
+
 async function sendLeadEmail(transcript: string) {
   const toEmail = process.env.RESEND_TO_EMAIL;
   const fromEmail = process.env.RESEND_FROM_EMAIL ?? "onboarding@resend.dev";
@@ -207,6 +264,9 @@ export async function POST(req: NextRequest) {
     const transcript = sanitized
       .map((m) => `${m.role === "user" ? "Visitor" : "Assistant"}: ${m.content}`)
       .join("\n") + `\nAssistant: ${cleanReply}`;
+    saveLeadToFile(transcript);
+    addLead(transcript);
+    saveLeadToCRM(sanitized, transcript).catch((e) => console.error("CRM lead error:", e));
     sendLeadEmail(transcript).catch((e) => console.error("Lead email error:", e));
   }
 

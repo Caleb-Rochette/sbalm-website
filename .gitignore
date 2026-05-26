@@ -34,3 +34,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# lead data — contains customer PII, never commit
+leads.log
+crm-data.json

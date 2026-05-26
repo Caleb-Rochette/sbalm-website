@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Archivo, Inter } from "next/font/google";
 import "./globals.css";
-import Nav from "@/components/Nav";
-import Footer from "@/components/Footer";
-import ChatWidget from "@/components/ChatWidget";
+import SiteShell from "@/components/SiteShell";
 
 const archivo = Archivo({
   subsets: ["latin"],
@@ -60,10 +58,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${archivo.variable} ${inter.variable}`}>
       <body className="font-body antialiased bg-brand-cream text-brand-dark">
-        <Nav />
-        <main>{children}</main>
-        <Footer />
-        <ChatWidget />
+        <SiteShell>{children}</SiteShell>
       </body>
     </html>
   );
