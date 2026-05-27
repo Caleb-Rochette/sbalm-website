@@ -132,6 +132,10 @@ function isRateLimited(ip: string): boolean {
 
 type Msg = { role: string; content: string };
 
+function cap(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+}
+
 function extractLeadInfo(messages: Msg[]) {
   const allText = messages.map(m => m.content).join(" ");
 
@@ -142,13 +146,39 @@ function extractLeadInfo(messages: Msg[]) {
   const rawPhone = phoneMatch?.[0]?.replace(/\D/g, "").replace(/^1/, "") ?? null;
   const phone = rawPhone ? `${rawPhone.slice(0,3)}-${rawPhone.slice(3,6)}-${rawPhone.slice(6)}` : null;
 
-  // Look for a user message that is just "First Last" — typical name reply
   let firstName = "Chat";
   let lastName  = "Lead";
+
+  // Strategy 1: explicit intro pattern anywhere — "my name is X [Y]", "I'm X", "call me X"
+  const introMatch = allText.match(
+    /(?:my name(?:'s)? is|i(?:'m| am)|this is|call me)\s+([A-Za-z'-]+)(?:\s+([A-Za-z'-]+))?/i
+  );
+  if (introMatch) {
+    firstName = cap(introMatch[1]);
+    if (introMatch[2]) lastName = cap(introMatch[2]);
+    return { firstName, lastName, email, phone };
+  }
+
+  // Strategy 2: user message right after AI asks for their name
+  for (let i = 0; i < messages.length - 1; i++) {
+    const cur = messages[i];
+    const nxt = messages[i + 1];
+    if (cur.role !== "assistant" || nxt.role !== "user") continue;
+    if (!/\bname\b/i.test(cur.content) || !/\?/.test(cur.content)) continue;
+    const words = nxt.content.trim().split(/\s+/);
+    if (words.length >= 1 && words.length <= 3 && words.every(w => /^[A-Za-z'-]{2,}$/.test(w))) {
+      firstName = cap(words[0]);
+      if (words.length >= 2) lastName = cap(words[words.length - 1]);
+      return { firstName, lastName, email, phone };
+    }
+  }
+
+  // Strategy 3: any user message that is exactly 2 name-like words (case-insensitive)
   for (const msg of messages) {
     if (msg.role !== "user") continue;
-    const m = msg.content.trim().match(/^([A-ZÀ-ÖØ-öø-ÿ][a-zÀ-ÖØ-öø-ÿ'-]+)\s+([A-ZÀ-ÖØ-öø-ÿ][a-zÀ-ÖØ-öø-ÿ'-]+)$/);
-    if (m) { firstName = m[1]; lastName = m[2]; break; }
+    const trimmed = msg.content.trim();
+    const m = trimmed.match(/^([A-Za-z'-]{2,})\s+([A-Za-z'-]{2,})$/);
+    if (m) { firstName = cap(m[1]); lastName = cap(m[2]); break; }
   }
 
   return { firstName, lastName, email, phone };
@@ -157,7 +187,15 @@ function extractLeadInfo(messages: Msg[]) {
 async function saveLeadToCRM(messages: Msg[], transcript: string) {
   try {
     const { firstName, lastName, email, phone } = extractLeadInfo(messages);
-    await prisma.customer.create({
+
+    // Need a user ID for the interaction — use the first admin account
+    const admin = await prisma.user.findFirst({
+      where: { role: "ADMIN" },
+      orderBy: { createdAt: "asc" },
+      select: { id: true },
+    });
+
+    const customer = await prisma.customer.create({
       data: {
         firstName,
         lastName,
@@ -168,6 +206,19 @@ async function saveLeadToCRM(messages: Msg[], transcript: string) {
         notes: `Chat transcript:\n\n${transcript}`,
       },
     });
+
+    // Create an interaction so the lead appears in Recent Activity on the dashboard
+    if (admin) {
+      const contactInfo = [email, phone].filter(Boolean).join(", ");
+      await prisma.interaction.create({
+        data: {
+          customerId:  customer.id,
+          type:        "NOTE",
+          summary:     `Lead captured via website chat.${contactInfo ? ` Contact: ${contactInfo}.` : ""}`,
+          createdById: admin.id,
+        },
+      });
+    }
   } catch (e) {
     console.error("CRM lead save error:", e);
   }
