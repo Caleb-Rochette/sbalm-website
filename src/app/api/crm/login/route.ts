@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/crm/db";
 import bcrypt from "bcryptjs";
 import { encode } from "@auth/core/jwt";
+import { SESSION_COOKIE } from "@/auth.config";
 
 export const runtime = "nodejs";
 
-// Match the cookie name NextAuth v5 uses — derived from NEXTAUTH_URL protocol
 const authUrl = process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "";
 const useSecureCookies = authUrl.startsWith("https://");
-const COOKIE_NAME = useSecureCookies ? "__Secure-authjs.session-token" : "authjs.session-token";
+const COOKIE_NAME = SESSION_COOKIE;
 const MAX_AGE = 8 * 60 * 60; // 8 hours
 
 async function verifyAndMintToken(email: string, password: string) {
