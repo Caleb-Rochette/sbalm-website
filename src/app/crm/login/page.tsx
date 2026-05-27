@@ -2,9 +2,7 @@
 "use client";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("daryl@sirboxalotmovers.com");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -16,7 +14,7 @@ export default function LoginPage() {
     setError("");
     const res = await signIn("credentials", { email, password, redirect: false });
     if (res?.ok) {
-      router.push("/crm/dashboard");
+      window.location.href = "/crm/dashboard";
     } else {
       setError("Invalid email or password. Account locks after 5 failed attempts.");
       setLoading(false);
