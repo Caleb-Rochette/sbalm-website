@@ -4,7 +4,7 @@ import { prisma } from "@/lib/crm/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { StatusBadge } from "@/components/crm/StatusBadge";
-import { SOURCE_LABELS, JOB_STATUS_LABELS, INTERACTION_LABELS, QUOTE_STATUS_LABELS } from "@/lib/crm/utils";
+import { SOURCE_LABELS, INTERACTION_LABELS } from "@/lib/crm/utils";
 import CustomerEditForm from "./CustomerEditForm";
 import type { Metadata } from "next";
 
