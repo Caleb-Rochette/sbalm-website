@@ -27,4 +27,10 @@ export const authConfig: NextAuthConfig = {
   },
   providers: [],
   trustHost: true,
+  // Plain cookie names — __Host-/__Secure- prefixes break through the nginx→Apache→PHP proxy chain
+  cookies: {
+    sessionToken: { name: "sbal.session",  options: { httpOnly: true,  sameSite: "lax", path: "/", secure: true } },
+    callbackUrl:  { name: "sbal.callback", options: { httpOnly: true,  sameSite: "lax", path: "/" } },
+    csrfToken:    { name: "sbal.csrf",     options: { httpOnly: true,  sameSite: "lax", path: "/" } },
+  },
 };
