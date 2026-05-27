@@ -3,11 +3,10 @@ import { prisma } from "@/lib/crm/db";
 import bcrypt from "bcryptjs";
 import { encode } from "@auth/core/jwt";
 import { SESSION_COOKIE } from "@/auth.config";
+import { storePendingSession } from "@/lib/crm/session-store";
 
 export const runtime = "nodejs";
 
-const authUrl = process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "";
-const useSecureCookies = authUrl.startsWith("https://");
 const COOKIE_NAME = SESSION_COOKIE;
 const MAX_AGE = 8 * 60 * 60; // 8 hours
 
@@ -53,16 +52,6 @@ async function verifyAndMintToken(email: string, password: string) {
   });
 }
 
-function setSessionCookie(response: NextResponse, token: string) {
-  response.cookies.set(COOKIE_NAME, token, {
-    httpOnly: true,
-    secure: useSecureCookies,
-    sameSite: "lax",
-    maxAge: MAX_AGE,
-    path: "/",
-  });
-}
-
 // Native form POST → redirect (no JavaScript required in the browser)
 export async function POST(req: NextRequest) {
   try {
@@ -90,9 +79,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.redirect(new URL("/crm/login?error=1", siteUrl), { status: 303 });
     }
 
-    const response = NextResponse.redirect(new URL("/crm/dashboard", siteUrl), { status: 303 });
-    setSessionCookie(response, token);
-    return response;
+    // Redirect to the session endpoint which sets the cookie on a real GET response.
+    // This avoids Vivaldi's bounce-tracking protection blocking cookies on POST→303 chains.
+    const nonce = storePendingSession(token);
+    return NextResponse.redirect(new URL(`/api/crm/session?n=${nonce}`, siteUrl), { status: 303 });
   } catch (err) {
     console.error("[crm/login] error:", err);
     const siteUrl = process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "https://sirboxalotmovers.com";

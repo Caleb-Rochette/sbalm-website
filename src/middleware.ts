@@ -9,7 +9,7 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
   const isAuthenticated = !!req.auth;
 
-  if (pathname === "/crm/login" || pathname === "/api/crm/login") return NextResponse.next();
+  if (pathname === "/crm/login" || pathname === "/api/crm/login" || pathname === "/api/crm/session" || pathname === "/api/crm/logout") return NextResponse.next();
 
   if (!isAuthenticated) {
     if (pathname.startsWith("/api/crm")) {

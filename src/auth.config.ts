@@ -1,9 +1,9 @@
 // CRM ONLY — edge-compatible auth config (no Node.js-only imports)
 import type { NextAuthConfig } from "next-auth";
 
-// Use site-specific cookie names to avoid tracker-blocking false positives
-const secure = (process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "").startsWith("https://");
-export const SESSION_COOKIE = secure ? "__Secure-sbal_session" : "sbal_session";
+// Plain name with Secure attribute — avoids __Secure- prefix edge/Node.js mismatch
+const secure = process.env.NODE_ENV === "production";
+export const SESSION_COOKIE = "sbal_session";
 
 export const authConfig: NextAuthConfig = {
   pages: { signIn: "/crm/login" },

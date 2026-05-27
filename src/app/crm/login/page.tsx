@@ -24,8 +24,7 @@ export default async function LoginPage({
             <div>
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Email</label>
               <input type="email" name="email" required autoComplete="email"
-                defaultValue="daryl@sirboxalotmovers.com"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-brand-orange" />
+className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-brand-orange" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Password</label>

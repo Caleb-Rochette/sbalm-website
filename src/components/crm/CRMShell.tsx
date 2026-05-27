@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
 import { ToastProvider } from "./Toast";
 
 const NAV = [
@@ -54,7 +53,7 @@ export default function CRMShell({ children, user }: {
           <div className="px-4 py-4 border-t border-white/10">
             <p className="text-white text-sm font-semibold truncate">{user.name}</p>
             <p className="text-brand-mist text-xs truncate mb-3">{user.email}</p>
-            <button onClick={() => signOut({ callbackUrl: "/crm/login" })}
+            <button onClick={() => { window.location.href = `/api/logout?t=${Date.now()}`; }}
               className="w-full text-left text-xs text-brand-mist hover:text-white transition-colors">
               Sign out →
             </button>
