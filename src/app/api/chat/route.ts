@@ -137,7 +137,8 @@ function cap(s: string) {
 }
 
 function extractLeadInfo(messages: Msg[]) {
-  const allText = messages.map(m => m.content).join(" ");
+  const allText  = messages.map(m => m.content).join(" ");
+  const userText = messages.filter(m => m.role === "user").map(m => m.content).join(" ");
 
   const emailMatch = allText.match(/[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,}/);
   const email = emailMatch?.[0] ?? null;
@@ -149,8 +150,8 @@ function extractLeadInfo(messages: Msg[]) {
   let firstName = "Chat";
   let lastName  = "Lead";
 
-  // Strategy 1: explicit intro pattern anywhere — "my name is X [Y]", "I'm X", "call me X"
-  const introMatch = allText.match(
+  // Strategy 1: explicit intro pattern in USER messages only — prevents matching bot's own "I'm the Sir Box a Lot..."
+  const introMatch = userText.match(
     /(?:my name(?:'s)? is|i(?:'m| am)|this is|call me)\s+([A-Za-z'-]+)(?:\s+([A-Za-z'-]+))?/i
   );
   if (introMatch) {

@@ -3,11 +3,20 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/crm/db";
 import Link from "next/link";
 import { StatusBadge } from "@/components/crm/StatusBadge";
-import { JOB_STATUS_LABELS, INTERACTION_LABELS } from "@/lib/crm/utils";
+import { INTERACTION_LABELS } from "@/lib/crm/utils";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Dashboard — Sir Box a Lot CRM" };
 export const dynamic = "force-dynamic";
+
+const SOURCE_LABELS: Record<string, string> = {
+  WEBSITE_CHAT: "Chat",
+  WEBSITE_FORM: "Form",
+  PHONE_CALL:   "Phone",
+  REFERRAL:     "Referral",
+  GOOGLE:       "Google",
+  OTHER:        "Other",
+};
 
 function fmtDate(d: Date) {
   return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
@@ -20,7 +29,7 @@ export default async function DashboardPage() {
   const todayEnd = new Date(now); todayEnd.setHours(23,59,59,999);
   const weekEnd = new Date(now); weekEnd.setDate(weekEnd.getDate() + 7);
 
-  const [todayJobs, weekJobs, openLeads, totalCustomers, upcomingJobs, recentActivity] = await Promise.all([
+  const [todayJobs, weekJobs, openLeads, totalCustomers, upcomingJobs, recentActivity, openLeadsList] = await Promise.all([
     prisma.job.count({ where: { jobDate: { gte: todayStart, lte: todayEnd } } }),
     prisma.job.count({ where: { jobDate: { gte: todayStart, lte: weekEnd }, status: { in: ["SCHEDULED", "IN_PROGRESS"] } } }),
     prisma.customer.count({ where: { status: "LEAD" } }),
@@ -35,6 +44,11 @@ export default async function DashboardPage() {
       include: { customer: true, createdBy: true },
       orderBy: { createdAt: "desc" },
       take: 10,
+    }),
+    prisma.customer.findMany({
+      where: { status: "LEAD" },
+      orderBy: { createdAt: "desc" },
+      take: 8,
     }),
   ]);
 
@@ -73,6 +87,39 @@ export default async function DashboardPage() {
             {a.label}
           </Link>
         ))}
+      </div>
+
+      {/* Open Leads */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 className="font-heading font-bold text-brand-navy">Open Leads</h2>
+          <Link href="/crm/customers?status=LEAD" className="text-xs text-brand-orange hover:underline">View all</Link>
+        </div>
+        {openLeadsList.length === 0 ? (
+          <p className="p-5 text-sm text-gray-400">No open leads right now.</p>
+        ) : (
+          <div className="divide-y divide-gray-50">
+            {openLeadsList.map(lead => (
+              <Link key={lead.id} href={`/crm/customers/${lead.id}`}
+                className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">
+                    {lead.firstName} {lead.lastName}
+                  </p>
+                  <p className="text-xs text-gray-400 truncate">
+                    {lead.phone ?? lead.email ?? "No contact info"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs text-gray-300">{fmtDate(lead.createdAt)}</span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+                    {SOURCE_LABELS[lead.source] ?? lead.source}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
