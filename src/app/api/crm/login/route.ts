@@ -82,20 +82,20 @@ export async function POST(req: NextRequest) {
       password = String(formData.get("password") ?? "");
     }
 
-    const origin = `${req.nextUrl.protocol}//${req.nextUrl.host}`;
+    // Use the public site URL so redirects work through the nginx proxy
+    const siteUrl = process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "https://sirboxalotmovers.com";
     const token = await verifyAndMintToken(email, password);
 
     if (!token) {
-      // Redirect back to login with error flag
-      return NextResponse.redirect(new URL("/crm/login?error=1", origin), { status: 303 });
+      return NextResponse.redirect(new URL("/crm/login?error=1", siteUrl), { status: 303 });
     }
 
-    const response = NextResponse.redirect(new URL("/crm/dashboard", origin), { status: 303 });
+    const response = NextResponse.redirect(new URL("/crm/dashboard", siteUrl), { status: 303 });
     setSessionCookie(response, token);
     return response;
   } catch (err) {
     console.error("[crm/login] error:", err);
-    const origin = `${req.nextUrl.protocol}//${req.nextUrl.host}`;
-    return NextResponse.redirect(new URL("/crm/login?error=1", origin), { status: 303 });
+    const siteUrl = process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "https://sirboxalotmovers.com";
+    return NextResponse.redirect(new URL("/crm/login?error=1", siteUrl), { status: 303 });
   }
 }
