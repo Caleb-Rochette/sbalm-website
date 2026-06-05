@@ -155,6 +155,7 @@ export async function POST(req: NextRequest) {
   });
 
   const safeName        = esc(name.trim());
+  const safeFirstName   = esc(splitName(name).firstName);
   const safePhone       = esc(phone.trim());
   const safeEmail       = esc(email.trim());
   const safeMoveSize    = esc(moveSize);
@@ -229,6 +230,50 @@ export async function POST(req: NextRequest) {
       { error: "Failed to send your message. Please call us at 253-523-3755." },
       { status: 500 }
     );
+  }
+
+  // Instant confirmation to the customer (autoresponder). Non-fatal — a failure
+  // here must never break the lead or the visitor's success screen.
+  try {
+    await resend.emails.send({
+      from: fromEmail,
+      to: email,
+      replyTo: toEmail,
+      subject: "We got your request — Sir Box a Lot Movers",
+      html: `
+        <div style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;color:#1f2937;">
+          <div style="background:#0F1E32;padding:28px 32px;border-radius:12px 12px 0 0;text-align:center;">
+            <h1 style="color:#ffffff;font-size:20px;margin:0;">Sir Box a Lot <span style="color:#EB4100;">Movers</span></h1>
+          </div>
+          <div style="background:#ffffff;padding:32px;border:1px solid #e5e7eb;border-top:none;">
+            <p style="font-size:16px;margin:0 0 16px;">Hi ${safeFirstName},</p>
+            <p style="font-size:15px;line-height:1.6;margin:0 0 16px;">
+              Thanks for reaching out! We&rsquo;ve received your request and a member of our crew
+              will get back to you <strong>within a few hours</strong> (during business hours) to
+              go over the details and get you a quote.
+            </p>
+            <div style="background:#FAF7F2;border:1px solid #E8E4DE;border-radius:10px;padding:16px 20px;margin:20px 0;">
+              <p style="font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:#8A8580;margin:0 0 10px;">Your request</p>
+              <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                <tr><td style="padding:4px 0;color:#6b7280;">Move date</td><td style="padding:4px 0;text-align:right;font-weight:600;">${safeDate}</td></tr>
+                <tr><td style="padding:4px 0;color:#6b7280;">Home size</td><td style="padding:4px 0;text-align:right;font-weight:600;">${safeMoveSize}</td></tr>
+                <tr><td style="padding:4px 0;color:#6b7280;">Service</td><td style="padding:4px 0;text-align:right;font-weight:600;">${safeServiceType}</td></tr>
+              </table>
+            </div>
+            <p style="font-size:15px;line-height:1.6;margin:0 0 10px;">Need us sooner, or have a question? Call or text anytime:</p>
+            <p style="margin:0 0 24px;">
+              <a href="tel:2535233755" style="display:inline-block;background:#EB4100;color:#ffffff;text-decoration:none;font-weight:700;padding:12px 24px;border-radius:10px;font-size:15px;">📞 253-523-3755</a>
+            </p>
+            <p style="font-size:15px;line-height:1.6;margin:0;">Talk soon,<br/><strong>The Sir Box a Lot crew</strong></p>
+          </div>
+          <div style="text-align:center;padding:16px;font-size:12px;color:#9ca3af;">
+            Sir Box a Lot Movers &middot; Gig Harbor, WA &middot; Serving Pierce, King &amp; Kitsap counties
+          </div>
+        </div>
+      `,
+    });
+  } catch (e) {
+    console.error("Autoresponder send error (contact form):", e);
   }
 
   // Email sent — now record the lead in the CRM. Non-fatal: a DB hiccup must
