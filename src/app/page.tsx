@@ -6,9 +6,9 @@ import TrustPoint from "@/components/TrustPoint";
 import SectionHeader from "@/components/SectionHeader";
 
 export const metadata: Metadata = {
-  title: "Sir Box a Lot Movers | Labor-Only Moving in Gig Harbor, WA",
+  title: "Sir Box a Lot Movers | Full-Service Local Moving in Gig Harbor, WA",
   description:
-    "Labor-only movers serving Pierce, King, and Kitsap counties. Strong backs, careful hands — we hustle. 2-man crew from $125/hr.",
+    "Full-service local movers serving Pierce, King, and Kitsap counties. We bring the truck, wrap and protect everything, and handle every detail of your move — start to finish. Fully insured.",
 };
 
 const trustPoints = [
@@ -30,7 +30,7 @@ const trustPoints = [
   {
     icon: "💵",
     headline: "Fair, transparent billing — no surprises.",
-    body: "2-hour minimum, 15-min increments.",
+    body: "A simple 2-hour minimum and honest hourly rates.",
   },
 ];
 
@@ -59,9 +59,9 @@ export default function HomePage() {
   return (
     <>
       {/* ── Hero ── */}
-      <section className="bg-brand-navy text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5 bg-[radial-gradient(circle_at_20%_50%,white_1px,transparent_1px)] bg-[length:32px_32px]" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
+      <section className="bg-brand-paper text-brand-navy relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.04] bg-[radial-gradient(circle_at_20%_50%,#0F1E32_1px,transparent_1px)] bg-[length:32px_32px]" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
           <div className="max-w-3xl">
             <p className="text-brand-orange font-semibold text-sm uppercase tracking-widest mb-4">
               Gig Harbor, WA · Pierce · King · Kitsap Counties
@@ -70,9 +70,10 @@ export default function HomePage() {
               Moving Day Made{" "}
               <span className="text-brand-orange">Easy.</span>
             </h1>
-            <p className="mt-6 text-xl text-brand-mist leading-relaxed max-w-2xl">
-              Strong backs. Careful hands. We hustle. You rent the truck — we
-              handle every lift, carry, and corner from start to finish.
+            <p className="mt-6 text-xl text-brand-stoneDark leading-relaxed max-w-2xl">
+              Strong backs. Careful hands. We hustle. We bring the truck, the
+              blankets, and the muscle — and handle every detail of your local
+              move, from the first wrap to the last piece set in place.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4">
               <Link
@@ -83,20 +84,20 @@ export default function HomePage() {
               </Link>
               <a
                 href="tel:2535233755"
-                className="inline-flex items-center justify-center gap-2 border-2 border-white/30 text-white font-semibold py-4 px-8 rounded-xl hover:border-white hover:bg-white/10 transition-colors text-base"
+                className="inline-flex items-center justify-center gap-2 border-2 border-brand-navy/25 text-brand-navy font-semibold py-4 px-8 rounded-xl hover:border-brand-navy hover:bg-brand-navy/5 transition-colors text-base"
               >
                 📞 253-523-3755
               </a>
             </div>
-            <p className="mt-6 text-sm text-brand-mist">
-              2-hour minimum · Labor only
+            <p className="mt-6 text-sm text-brand-stone">
+              2-hour minimum · Fully insured
             </p>
           </div>
         </div>
       </section>
 
       {/* ── How It Works ── */}
-      <section className="bg-brand-cream py-20">
+      <section className="bg-brand-cream py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeader
             eyebrow="Simple Process"
@@ -107,18 +108,18 @@ export default function HomePage() {
             {[
               {
                 step: "01",
-                title: "You Rent the Truck",
-                body: "Book a U-Haul, Penske, Budget, or any rental truck that fits your move. We help you pick the right size if you need advice.",
+                title: "Get Your Free Quote",
+                body: "Tell us what you're moving and where. We'll recommend the right crew size and give you a clear, honest estimate — no guesswork.",
               },
               {
                 step: "02",
                 title: "We Show Up Ready",
-                body: "Your crew arrives on time, padded and ready. We load with care, protect your home and belongings, and hustle every minute.",
+                body: "Your crew arrives on time with the truck, blankets, shrink wrap, and tools. Furniture gets padded, wrapped, and disassembled as needed.",
               },
               {
                 step: "03",
-                title: "Pay Only for Time Worked",
-                body: "Two-hour minimum, then billed in 15-minute increments. Just honest labor.",
+                title: "We Handle Every Detail",
+                body: "We load, drive, and unload with care — then reassemble your furniture and set each piece exactly where you want it.",
               },
             ].map(({ step, title, body }) => (
               <div key={step} className="relative bg-brand-paper rounded-2xl p-8 shadow-sm border border-brand-stoneLight">
@@ -134,7 +135,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Pricing ── */}
-      <section className="bg-brand-paper py-20">
+      <section className="bg-brand-paper py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeader
             eyebrow="Pricing"
@@ -144,23 +145,25 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
             <PricingCard
               crew="2-Man Crew"
-              rate="$125"
+              rate="$139"
               features={[
                 "2 professional movers",
                 "2-hour minimum",
-                "15-min billing increments after",
-                "Loading and/or unloading",
+                "Loading, transport & unloading",
+                "Moving blankets & shrink wrap",
+                "Furniture disassembly & reassembly",
               ]}
             />
             <PricingCard
               crew="3-Man Crew"
-              rate="$175"
+              rate="$189"
               highlight
               features={[
                 "3 professional movers",
                 "2-hour minimum",
-                "15-min billing increments after",
-                "Loading and/or unloading",
+                "Loading, transport & unloading",
+                "Moving blankets & shrink wrap",
+                "Furniture disassembly & reassembly",
                 "Faster for larger homes",
               ]}
             />
@@ -175,7 +178,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Trust Points ── */}
-      <section className="bg-brand-navy py-20">
+      <section className="bg-brand-navy py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeader
             eyebrow="Our Promise"
@@ -192,7 +195,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Reviews ── */}
-      <section className="bg-brand-cream py-20">
+      <section className="bg-brand-cream py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeader
             eyebrow="Reviews"
@@ -208,7 +211,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Final CTA ── */}
-      <section className="bg-brand-orange py-20">
+      <section className="bg-brand-orange py-14">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="font-heading text-4xl md:text-5xl font-extrabold text-white">
             Let&apos;s make your move happen.

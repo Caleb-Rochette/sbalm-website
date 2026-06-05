@@ -11,7 +11,7 @@ export default function ContactPage() {
   return (
     <>
       {/* ── Page Hero ── */}
-      <section className="bg-brand-navy text-white py-20">
+      <section className="bg-brand-cream text-brand-navy py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-brand-orange text-sm font-semibold uppercase tracking-widest mb-3">
             Get in Touch
@@ -19,7 +19,7 @@ export default function ContactPage() {
           <h1 className="font-heading text-4xl md:text-5xl font-extrabold">
             Request a Quote
           </h1>
-          <p className="mt-4 text-brand-mist text-lg max-w-xl">
+          <p className="mt-4 text-brand-stoneDark text-lg max-w-xl">
             Fill out the form below or give us a call. We respond fast — usually
             within a few hours.
           </p>
@@ -94,7 +94,7 @@ export default function ContactPage() {
                   {[
                     "Response within a few hours",
                     "No-pressure quote, no obligation",
-                    "2-hour minimum, 15-min increments",
+                    "Simple 2-hour minimum, no hidden fees",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2 text-sm text-brand-stoneDark">
                       <span className="text-brand-orange font-bold shrink-0">✓</span>

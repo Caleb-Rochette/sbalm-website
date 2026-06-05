@@ -6,7 +6,7 @@ import SectionHeader from "@/components/SectionHeader";
 export const metadata: Metadata = {
   title: "About Us",
   description:
-    "Meet the team behind Sir Box a Lot Movers. Labor-only movers based in Gig Harbor, WA — built on hustle, honesty, and careful hands.",
+    "Meet the team behind Sir Box a Lot Movers. Full-service local movers based in Gig Harbor, WA — built on hustle, honesty, and careful hands.",
 };
 
 const trustPoints = [
@@ -28,7 +28,7 @@ const trustPoints = [
   {
     icon: "💵",
     headline: "Fair, transparent billing — no surprises.",
-    body: "2-hour minimum, 15-min increments.",
+    body: "A simple 2-hour minimum and honest hourly rates.",
   },
 ];
 
@@ -36,7 +36,7 @@ export default function AboutPage() {
   return (
     <>
       {/* ── Hero ── */}
-      <section className="bg-brand-navy text-white py-20">
+      <section className="bg-brand-cream text-brand-navy py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-brand-orange text-sm font-semibold uppercase tracking-widest mb-3">
             Who We Are
@@ -44,12 +44,12 @@ export default function AboutPage() {
           <h1 className="font-heading text-4xl md:text-5xl font-extrabold">
             About Sir Box a Lot Movers
           </h1>
-          <p className="mt-4 text-brand-mist text-xl font-medium italic">
+          <p className="mt-4 text-brand-stoneDark text-xl font-medium italic">
             &ldquo;Strong backs. Careful hands. We hustle.&rdquo;
           </p>
-          <p className="mt-4 text-brand-mist text-lg max-w-2xl">
-            A labor-only moving company rooted in Gig Harbor, WA — built on the
-            belief that moving day shouldn&apos;t be a nightmare.
+          <p className="mt-4 text-brand-stoneDark text-lg max-w-2xl">
+            A full-service local moving company rooted in Gig Harbor, WA — built
+            on the belief that moving day shouldn&apos;t be a nightmare.
           </p>
         </div>
       </section>
@@ -60,7 +60,7 @@ export default function AboutPage() {
         Suggested points to cover:
         - Why you started Sir Box a Lot (personal experience? saw a gap in the market?)
         - How long you've been operating
-        - What the "labor-only" model means to you and why you chose it
+        - What full-service, local-focused moving means to you and how you take care of every detail
         - Your connection to the Gig Harbor / South Sound community
         - Any personal touches (background, what drives the crew)
       */}

@@ -18,14 +18,14 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Sir Box a Lot Movers | Labor-Only Moving in Gig Harbor, WA",
+    default: "Sir Box a Lot Movers | Full-Service Local Moving in Gig Harbor, WA",
     template: "%s | Sir Box a Lot Movers",
   },
   description:
-    "Labor-only movers serving Pierce, King, and Kitsap counties. Strong backs, careful hands — we hustle. 2-man crew from $125/hr. Based in Gig Harbor, WA.",
+    "Full-service local movers serving Pierce, King, and Kitsap counties. We bring the truck, wrap and protect everything, and handle every detail — start to finish. Fully insured. Based in Gig Harbor, WA.",
   keywords: [
     "moving company",
-    "labor only movers",
+    "full service movers",
     "Gig Harbor movers",
     "Pierce County moving",
     "King County moving",
@@ -39,9 +39,9 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     siteName: "Sir Box a Lot Movers",
-    title: "Sir Box a Lot Movers | Labor-Only Moving in Gig Harbor, WA",
+    title: "Sir Box a Lot Movers | Full-Service Local Moving in Gig Harbor, WA",
     description:
-      "Strong backs. Careful hands. We hustle. Labor-only moving serving Pierce, King, and Kitsap counties from $125/hr.",
+      "Strong backs. Careful hands. We hustle. Full-service local moving serving Pierce, King, and Kitsap counties — we handle every detail, start to finish.",
   },
   twitter: {
     card: "summary_large_image",

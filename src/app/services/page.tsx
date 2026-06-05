@@ -6,14 +6,14 @@ import SectionHeader from "@/components/SectionHeader";
 export const metadata: Metadata = {
   title: "Services",
   description:
-    "Professional loading, unloading, and packing services. Labor-only moving in Pierce, King, and Kitsap counties starting at $125/hr.",
+    "Full-service local moving in Pierce, King, and Kitsap counties. We bring the truck, wrap and pad your furniture, disassemble and reassemble, and handle loading, transport, and unloading.",
 };
 
 export default function ServicesPage() {
   return (
     <>
       {/* ── Page Hero ── */}
-      <section className="bg-brand-navy text-white py-20">
+      <section className="bg-brand-cream text-brand-navy py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-brand-orange text-sm font-semibold uppercase tracking-widest mb-3">
             What We Do
@@ -21,9 +21,9 @@ export default function ServicesPage() {
           <h1 className="font-heading text-4xl md:text-5xl font-extrabold">
             Our Services
           </h1>
-          <p className="mt-4 text-brand-mist text-lg max-w-2xl">
-            We provide the muscle — you provide the truck. Here&apos;s exactly
-            what we bring to every job.
+          <p className="mt-4 text-brand-stoneDark text-lg max-w-2xl">
+            From the truck to the last box, we take care of every detail.
+            Here&apos;s exactly what we bring to every job.
           </p>
         </div>
       </section>
@@ -45,29 +45,30 @@ export default function ServicesPage() {
               </div>
               <div>
                 <h2 className="font-heading text-2xl font-bold text-brand-navy">
-                  Loading &amp; Unloading
+                  Full-Service Local Moving
                 </h2>
                 <p className="text-brand-orange text-sm font-semibold mt-1">
-                  Our core service
+                  Our core service — every detail handled
                 </p>
               </div>
             </div>
             <p className="text-brand-stoneDark leading-relaxed mb-6">
-              You rent the truck — U-Haul, Penske, Budget, or any other rental —
-              and we provide everything else. Our crews show up ready to work:
-              experienced, equipped with moving blankets and straps, and focused
-              on protecting your home and belongings from the first lift to the
-              last box.
+              We handle your entire local move from start to finish. We bring the
+              rental truck, the moving blankets, the shrink wrap, and the tools —
+              then pad, wrap, load, transport, and unload with care, protecting
+              your home and belongings every step of the way.
             </p>
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
               {[
+                "Rental truck arranged and driven for you",
+                "Moving blankets and shrink wrap on every job",
                 "Professional loading of all furniture and boxes",
                 "Careful furniture padding and wrapping",
-                "Floor and doorway protection at both locations",
-                "Strategic truck loading to prevent shifting",
-                "Unloading and placement in your new home",
+                "Disassembly and reassembly of your furniture",
+                "Floor and doorway protection at both homes",
+                "Strategic loading to prevent shifting in transit",
                 "Appliance handling (washers, dryers, refrigerators)",
-                "Disassembly and reassembly of basic furniture",
+                "Unloading and placement in your new home",
                 "Stair carries at no extra charge",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2 text-sm text-brand-stoneDark">
@@ -80,7 +81,7 @@ export default function ServicesPage() {
               href="/contact"
               className="inline-flex items-center justify-center bg-brand-orange text-white font-bold py-3 px-8 rounded-xl hover:bg-brand-ember transition-colors"
             >
-              Book Loading &amp; Unloading
+              Book Your Move
             </Link>
           </div>
 
@@ -131,28 +132,30 @@ export default function ServicesPage() {
           <SectionHeader
             eyebrow="Pricing"
             heading="Simple, Honest Rates"
-            subheading="2-hour minimum. 15-minute increments after that."
+            subheading="A 2-hour minimum on every job — no hidden fees."
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
             <PricingCard
               crew="2-Man Crew"
-              rate="$125"
+              rate="$139"
               features={[
                 "2 professional movers",
                 "2-hour minimum",
-                "15-min billing increments after",
-                "Loading and/or unloading",
+                "Loading, transport & unloading",
+                "Moving blankets & shrink wrap",
+                "Furniture disassembly & reassembly",
               ]}
             />
             <PricingCard
               crew="3-Man Crew"
-              rate="$175"
+              rate="$189"
               highlight
               features={[
                 "3 professional movers",
                 "2-hour minimum",
-                "15-min billing increments after",
-                "Loading and/or unloading",
+                "Loading, transport & unloading",
+                "Moving blankets & shrink wrap",
+                "Furniture disassembly & reassembly",
                 "Faster for 3BR+ homes",
               ]}
             />
@@ -167,15 +170,15 @@ export default function ServicesPage() {
               {[
                 {
                   q: "Do you provide the truck?",
-                  a: "No — we are labor-only. You rent the truck (U-Haul, Penske, Budget, etc.) and we provide the crew to load and unload it.",
+                  a: "Yes. We arrange and drive a rental truck sized for your move, so you don't have to. The truck, blankets, and equipment all come with the crew.",
                 },
                 {
                   q: "What's the minimum charge?",
-                  a: "We have a 2-hour minimum. After the first 2 hours, we bill in 15-minute increments.",
+                  a: "We have a 2-hour minimum on every job — that's it.",
                 },
                 {
                   q: "Are there any surprise charges?",
-                  a: "Never. You pay for labor time — that's it. If you'd like us to arrange the truck, we can do that too, and any rental cost passes straight through to you at no markup.",
+                  a: "No surprises. We walk you through the full estimate before we start — crew, truck, and equipment included — so the number you approve is the number you pay.",
                 },
                 {
                   q: "Which crew size should I book?",

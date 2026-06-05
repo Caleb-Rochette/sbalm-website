@@ -32,8 +32,8 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-sm leading-relaxed text-brand-mist">
-              Strong backs. Careful hands. We hustle. Labor-only movers serving
-              Pierce, King, and Kitsap counties.
+              Strong backs. Careful hands. We hustle. Full-service local movers
+              serving Pierce, King, and Kitsap counties.
             </p>
             {/* TODO: Add real social links when accounts are created */}
             <div className="flex gap-3">
