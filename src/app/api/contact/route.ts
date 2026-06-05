@@ -155,7 +155,8 @@ export async function POST(req: NextRequest) {
   });
 
   const safeName        = esc(name.trim());
-  const safeFirstName   = esc(splitName(name).firstName);
+  const firstNameRaw    = splitName(name).firstName;
+  const safeFirstName   = esc(firstNameRaw);
   const safePhone       = esc(phone.trim());
   const safeEmail       = esc(email.trim());
   const safeMoveSize    = esc(moveSize);
@@ -232,43 +233,53 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Instant confirmation to the customer (autoresponder). Non-fatal — a failure
-  // here must never break the lead or the visitor's success screen.
+  // Instant, personal confirmation to the customer (autoresponder). Non-fatal —
+  // a failure here must never break the lead or the visitor's success screen.
+  const serviceText =
+    serviceType === "Both"
+      ? "packing plus loading and unloading"
+      : serviceType === "Packing"
+      ? "packing"
+      : "loading and unloading";
+  const sizeMap: Record<string, string> = {
+    "Studio/1BR": "studio/1-bedroom",
+    "2BR": "2-bedroom",
+    "3BR": "3-bedroom",
+    "4BR+": "4+ bedroom",
+    Commercial: "commercial",
+  };
+  const sizeText = esc(sizeMap[moveSize] ?? moveSize);
+  const personalDate = esc(
+    new Date(moveDate + "T00:00:00").toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+    })
+  );
+  const fromAddr = fromEmail.match(/<([^>]+)>/)?.[1] ?? fromEmail;
   try {
     await resend.emails.send({
-      from: fromEmail,
+      from: `"Daryl — Sir Box a Lot Movers" <${fromAddr}>`,
       to: email,
       replyTo: toEmail,
-      subject: "We got your request — Sir Box a Lot Movers",
+      subject: `Thanks, ${firstNameRaw} — I got your moving request`,
       html: `
-        <div style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;color:#1f2937;">
-          <div style="background:#0F1E32;padding:28px 32px;border-radius:12px 12px 0 0;text-align:center;">
-            <h1 style="color:#ffffff;font-size:20px;margin:0;">Sir Box a Lot <span style="color:#EB4100;">Movers</span></h1>
-          </div>
-          <div style="background:#ffffff;padding:32px;border:1px solid #e5e7eb;border-top:none;">
-            <p style="font-size:16px;margin:0 0 16px;">Hi ${safeFirstName},</p>
-            <p style="font-size:15px;line-height:1.6;margin:0 0 16px;">
-              Thanks for reaching out! We&rsquo;ve received your request and a member of our crew
-              will get back to you <strong>within a few hours</strong> (during business hours) to
-              go over the details and get you a quote.
-            </p>
-            <div style="background:#FAF7F2;border:1px solid #E8E4DE;border-radius:10px;padding:16px 20px;margin:20px 0;">
-              <p style="font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:#8A8580;margin:0 0 10px;">Your request</p>
-              <table style="width:100%;border-collapse:collapse;font-size:14px;">
-                <tr><td style="padding:4px 0;color:#6b7280;">Move date</td><td style="padding:4px 0;text-align:right;font-weight:600;">${safeDate}</td></tr>
-                <tr><td style="padding:4px 0;color:#6b7280;">Home size</td><td style="padding:4px 0;text-align:right;font-weight:600;">${safeMoveSize}</td></tr>
-                <tr><td style="padding:4px 0;color:#6b7280;">Service</td><td style="padding:4px 0;text-align:right;font-weight:600;">${safeServiceType}</td></tr>
-              </table>
-            </div>
-            <p style="font-size:15px;line-height:1.6;margin:0 0 10px;">Need us sooner, or have a question? Call or text anytime:</p>
-            <p style="margin:0 0 24px;">
-              <a href="tel:2535233755" style="display:inline-block;background:#EB4100;color:#ffffff;text-decoration:none;font-weight:700;padding:12px 24px;border-radius:10px;font-size:15px;">📞 253-523-3755</a>
-            </p>
-            <p style="font-size:15px;line-height:1.6;margin:0;">Talk soon,<br/><strong>The Sir Box a Lot crew</strong></p>
-          </div>
-          <div style="text-align:center;padding:16px;font-size:12px;color:#9ca3af;">
-            Sir Box a Lot Movers &middot; Gig Harbor, WA &middot; Serving Pierce, King &amp; Kitsap counties
-          </div>
+        <div style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.6;color:#1f2937;max-width:520px;margin:0 auto;padding:8px 4px;">
+          <p style="margin:0 0 16px;">Hi ${safeFirstName},</p>
+          <p style="margin:0 0 16px;">This is Daryl with <a href="https://sirboxalotmovers.com" style="color:#1f2937;">sirboxalotmovers.com</a>. I just got your request for help with ${serviceText} on ${personalDate}, for your ${sizeText} move &mdash; thank you for reaching out!</p>
+          ${
+            safeMessage
+              ? `<p style="margin:0 0 16px;">I saw your note, too: &ldquo;${safeMessage}&rdquo; Good to know &mdash; we&rsquo;ll plan for it.</p>`
+              : ""
+          }
+          <p style="margin:0 0 16px;">Let me check our calendar and I&rsquo;ll get right back with you.</p>
+          <p style="margin:0 0 16px;">There&rsquo;s nothing we enjoy more than taking the stress out of moving day, and I&rsquo;d love for our crew to be the ones who do that for you.</p>
+          <p style="margin:0 0 16px;">Need anything sooner, or want to talk it through? Just call me directly at <a href="tel:2535233755" style="color:#1f2937;font-weight:600;">253-523-3755</a>.</p>
+          <p style="margin:0 0 2px;">Talk soon,</p>
+          <p style="margin:0;font-weight:600;">Daryl</p>
+          <p style="margin:0;color:#6b7280;">Sir Box a Lot Movers</p>
+          <p style="margin:0;color:#6b7280;">253-523-3755</p>
+          <p style="margin:2px 0 0;"><a href="https://sirboxalotmovers.com" style="color:#EB4100;text-decoration:none;">sirboxalotmovers.com</a></p>
         </div>
       `,
     });
