@@ -4,6 +4,7 @@ import PricingCard from "@/components/PricingCard";
 import ReviewCard from "@/components/ReviewCard";
 import TrustPoint from "@/components/TrustPoint";
 import SectionHeader from "@/components/SectionHeader";
+import ContactForm from "@/components/ContactForm";
 
 export const metadata: Metadata = {
   title: "Sir Box a Lot Movers | Full-Service Local Moving in Gig Harbor, WA",
@@ -62,36 +63,66 @@ export default function HomePage() {
       <section className="bg-brand-paper text-brand-navy relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.04] bg-[radial-gradient(circle_at_20%_50%,#0F1E32_1px,transparent_1px)] bg-[length:32px_32px]" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-          <div className="max-w-3xl">
-            <p className="text-brand-orange font-semibold text-sm uppercase tracking-widest mb-4">
-              Gig Harbor, WA · Pierce · King · Kitsap Counties
-            </p>
-            <h1 className="font-heading text-5xl md:text-6xl font-extrabold leading-tight">
-              Moving Day Made{" "}
-              <span className="text-brand-orange">Easy.</span>
-            </h1>
-            <p className="mt-6 text-xl text-brand-stoneDark leading-relaxed max-w-2xl">
-              Strong backs. Careful hands. We hustle. We bring the truck, the
-              blankets, and the muscle — and handle every detail of your local
-              move, from the first wrap to the last piece set in place.
-            </p>
-            <div className="mt-10 flex flex-col sm:flex-row gap-4">
-              <Link
-                href="/contact"
-                className="inline-flex items-center justify-center bg-brand-orange text-white font-bold py-4 px-8 rounded-xl hover:bg-brand-ember transition-colors text-base"
-              >
-                Get a Free Quote
-              </Link>
-              <a
-                href="tel:2535233755"
-                className="inline-flex items-center justify-center gap-2 border-2 border-brand-navy/25 text-brand-navy font-semibold py-4 px-8 rounded-xl hover:border-brand-navy hover:bg-brand-navy/5 transition-colors text-base"
-              >
-                📞 253-523-3755
-              </a>
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-start">
+            {/* Left: headline + copy */}
+            <div className="max-w-2xl lg:mt-[72px]">
+              <p className="text-brand-orange font-semibold text-sm uppercase tracking-widest mb-4">
+                Gig Harbor, WA · Pierce · King · Kitsap Counties
+              </p>
+              <h1 className="font-heading text-4xl md:text-5xl font-extrabold leading-tight">
+                Moving Day Made{" "}
+                <span className="text-brand-orange">Easy.</span>
+              </h1>
+              <p className="mt-6 text-lg text-brand-stoneDark leading-relaxed">
+                Strong backs. Careful hands. We hustle. We bring the truck, the
+                blankets, and the muscle — and handle every detail of your local
+                move, from the first wrap to the last piece set in place.
+              </p>
+
+              {/* What you get */}
+              <ul className="mt-7 space-y-3">
+                {[
+                  "Furniture disassembly & reassembly",
+                  "Padding, shrink wrap & floor protection",
+                  "Loading, transport & unloading",
+                  "Licensed & fully insured on every job",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-3 text-brand-stoneDark">
+                    <span className="text-brand-orange font-bold shrink-0 mt-1 text-lg leading-none">✓</span>
+                    <span className="text-base leading-snug">{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-8">
+                <a
+                  href="tel:2535233755"
+                  className="inline-flex items-center justify-center gap-2 border-2 border-brand-navy/25 text-brand-navy font-semibold py-4 px-8 rounded-xl hover:border-brand-navy hover:bg-brand-navy/5 transition-colors text-base"
+                >
+                  📞 253-523-3755
+                </a>
+              </div>
+              <div className="mt-4 flex items-center gap-2 text-sm">
+                <span className="text-brand-gold">★★★★★</span>
+                <span className="text-brand-stone">Trusted across the South Sound</span>
+              </div>
+              <p className="mt-6 text-sm text-brand-stone">
+                2-hour minimum · Fully insured
+              </p>
             </div>
-            <p className="mt-6 text-sm text-brand-stone">
-              2-hour minimum · Fully insured
-            </p>
+
+            {/* Right: quote form */}
+            <div id="quote" className="w-full lg:justify-self-end lg:max-w-md lg:-mt-6">
+              <div className="bg-brand-paper rounded-2xl shadow-2xl border border-brand-stoneLight p-6 md:p-7">
+                <h2 className="font-heading text-2xl font-extrabold text-brand-navy">
+                  Get a Free Quote
+                </h2>
+                <p className="text-sm text-brand-stone mt-1 mb-5">
+                  Tell us about your move — we&apos;ll get back to you within a few hours.
+                </p>
+                <ContactForm />
+              </div>
+            </div>
           </div>
         </div>
       </section>

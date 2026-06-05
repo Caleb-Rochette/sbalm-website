@@ -88,7 +88,7 @@ export default function ContactForm() {
     "w-full border border-brand-stoneLight rounded-xl px-4 py-3 text-sm bg-brand-cream focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-transparent transition placeholder:text-brand-mist";
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6" noValidate>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
       {/* Name + Phone */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
