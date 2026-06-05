@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
+import { prisma } from "@/lib/crm/db";
+
+export const runtime = "nodejs";
 
 interface ContactPayload {
   name: string;
@@ -39,6 +42,64 @@ function isRateLimited(ip: string): boolean {
   if (entry.count >= RATE_LIMIT) return true;
   entry.count++;
   return false;
+}
+
+function splitName(full: string): { firstName: string; lastName: string } {
+  const parts = full.trim().split(/\s+/);
+  return {
+    firstName: parts[0] || "Website",
+    lastName: parts.length > 1 ? parts.slice(1).join(" ") : "Lead",
+  };
+}
+
+async function saveLeadToCRM(p: {
+  name: string;
+  phone: string;
+  email: string;
+  moveDate: string;
+  moveSize: string;
+  serviceType: string;
+  message?: string;
+}) {
+  const { firstName, lastName } = splitName(p.name);
+  const notes = [
+    "Quote request via website form.",
+    `Move date: ${p.moveDate}`,
+    `Home size: ${p.moveSize}`,
+    `Service needed: ${p.serviceType}`,
+    p.message?.trim() ? `Notes: ${p.message.trim()}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  const customer = await prisma.customer.create({
+    data: {
+      firstName,
+      lastName,
+      email: p.email.trim() || null,
+      phone: p.phone.trim() || null,
+      source: "WEBSITE_FORM",
+      status: "LEAD",
+      notes,
+    },
+  });
+
+  // Attach an interaction so the lead surfaces in Recent Activity on the dashboard.
+  const admin = await prisma.user.findFirst({
+    where: { role: "ADMIN" },
+    orderBy: { createdAt: "asc" },
+    select: { id: true },
+  });
+  if (admin) {
+    await prisma.interaction.create({
+      data: {
+        customerId: customer.id,
+        type: "NOTE",
+        summary: `New quote request via website form — ${p.moveSize}, move date ${p.moveDate}.`,
+        createdById: admin.id,
+      },
+    });
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -162,7 +223,6 @@ export async function POST(req: NextRequest) {
       `,
     });
 
-    return NextResponse.json({ success: true }, { status: 200 });
   } catch (err) {
     console.error("Resend error:", err);
     return NextResponse.json(
@@ -170,4 +230,14 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+
+  // Email sent — now record the lead in the CRM. Non-fatal: a DB hiccup must
+  // never make the visitor think their submission failed.
+  try {
+    await saveLeadToCRM({ name, phone, email, moveDate, moveSize, serviceType, message });
+  } catch (e) {
+    console.error("CRM lead save error (contact form):", e);
+  }
+
+  return NextResponse.json({ success: true }, { status: 200 });
 }
