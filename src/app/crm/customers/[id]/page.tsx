@@ -70,7 +70,14 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Edit form */}
         <div className="lg:col-span-1">
-          <CustomerEditForm customer={customer} />
+          <CustomerEditForm
+            customer={customer}
+            counts={{
+              jobs: customer.jobs.length,
+              interactions: customer.interactions.length,
+              quotes: customer.quotes.length,
+            }}
+          />
         </div>
 
         {/* Right column */}

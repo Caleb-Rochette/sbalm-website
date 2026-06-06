@@ -7,7 +7,13 @@ import type { Customer } from "@prisma/client";
 const STATUS_OPTS  = [["LEAD","Lead"],["BOOKED","Booked"],["COMPLETED","Completed"],["CANCELLED","Cancelled"],["NO_SHOW","No Show"]];
 const SOURCE_OPTS  = [["WEBSITE_FORM","Website Form"],["WEBSITE_CHAT","Website Chat"],["PHONE_CALL","Phone Call"],["REFERRAL","Referral"],["GOOGLE","Google"],["OTHER","Other"]];
 
-export default function CustomerEditForm({ customer }: { customer: Customer }) {
+export default function CustomerEditForm({
+  customer,
+  counts,
+}: {
+  customer: Customer;
+  counts: { jobs: number; interactions: number; quotes: number };
+}) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -46,7 +52,14 @@ export default function CustomerEditForm({ customer }: { customer: Customer }) {
   }
 
   async function deleteCustomer() {
-    if (!confirm(`Delete ${customer.firstName} ${customer.lastName}? This cannot be undone.`)) return;
+    const related: string[] = [];
+    if (counts.jobs) related.push(`${counts.jobs} job${counts.jobs === 1 ? "" : "s"}`);
+    if (counts.quotes) related.push(`${counts.quotes} quote${counts.quotes === 1 ? "" : "s"}`);
+    if (counts.interactions) related.push(`${counts.interactions} interaction${counts.interactions === 1 ? "" : "s"}`);
+    const extra = related.length
+      ? `\n\nThis will also permanently delete ${related.join(", ")}.`
+      : "";
+    if (!confirm(`Delete ${customer.firstName} ${customer.lastName}?${extra}\n\nThis cannot be undone.`)) return;
     setDeleting(true);
     setError("");
     const res = await fetch(`/api/crm/customers/${customer.id}`, { method: "DELETE" });
