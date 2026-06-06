@@ -6,6 +6,10 @@ import { prisma } from "@/lib/crm/db";
 import bcrypt from "bcryptjs";
 import type { UserRole } from "@prisma/client";
 
+// Compared against when the email doesn't exist, so authorize() timing doesn't
+// reveal which emails are valid (anti-enumeration).
+const DUMMY_HASH = bcrypt.hashSync("invalid-placeholder", 10);
+
 declare module "next-auth" {
   interface User { role: UserRole; }
   interface Session { user: { id: string; email: string; name: string; role: UserRole; }; }
@@ -26,13 +30,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const password = String(credentials.password);
 
         const user = await prisma.user.findUnique({ where: { email } });
+
+        // Constant-time: always compare (dummy hash when user absent) so timing
+        // doesn't reveal which emails are valid.
+        const valid = await bcrypt.compare(password, user?.hashedPassword ?? DUMMY_HASH);
+
         if (!user) return null;
-
-        // Check lockout
         if (user.lockedUntil && user.lockedUntil > new Date()) return null;
-
-        const valid = await bcrypt.compare(password, user.hashedPassword);
-
         if (!valid) {
           const attempts = user.failedLoginAttempts + 1;
           await prisma.user.update({

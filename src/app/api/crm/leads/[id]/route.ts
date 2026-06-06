@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
 import { updateLead } from "@/lib/crm-store";
 
 export const runtime = "nodejs";
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await auth();
+  if (!session) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   const updates = await req.json().catch(() => null);
   if (!updates) return NextResponse.json({ error: "Invalid body." }, { status: 400 });
 

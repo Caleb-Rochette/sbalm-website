@@ -10,15 +10,35 @@ export const runtime = "nodejs";
 const COOKIE_NAME = SESSION_COOKIE;
 const MAX_AGE = 8 * 60 * 60; // 8 hours
 
+// Compared against when the email doesn't exist, so login response timing
+// doesn't reveal which emails are valid (anti-enumeration).
+const DUMMY_HASH = bcrypt.hashSync("invalid-placeholder", 10);
+
+// In-memory per-IP login throttle: 10 attempts / 15 min.
+const loginAttempts = new Map<string, { count: number; resetAt: number }>();
+function loginRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const e = loginAttempts.get(ip);
+  if (!e || now > e.resetAt) {
+    loginAttempts.set(ip, { count: 1, resetAt: now + 15 * 60 * 1000 });
+    return false;
+  }
+  if (e.count >= 10) return true;
+  e.count++;
+  return false;
+}
+
 async function verifyAndMintToken(email: string, password: string) {
   if (!email || !password) return null;
 
   const user = await prisma.user.findUnique({ where: { email } });
+
+  // Always run a bcrypt compare (dummy hash when the user is absent) so the
+  // response time doesn't reveal whether an email exists.
+  const valid = await bcrypt.compare(password, user?.hashedPassword ?? DUMMY_HASH);
+
   if (!user) return null;
-
   if (user.lockedUntil && user.lockedUntil > new Date()) return null;
-
-  const valid = await bcrypt.compare(password, user.hashedPassword);
   if (!valid) {
     const attempts = user.failedLoginAttempts + 1;
     await prisma.user.update({
@@ -55,6 +75,15 @@ async function verifyAndMintToken(email: string, password: string) {
 // Native form POST → redirect (no JavaScript required in the browser)
 export async function POST(req: NextRequest) {
   try {
+    const siteUrl = process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "https://sirboxalotmovers.com";
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      req.headers.get("x-real-ip") ??
+      "unknown";
+    if (loginRateLimited(ip)) {
+      return NextResponse.redirect(new URL("/crm/login?error=1", siteUrl), { status: 303 });
+    }
+
     const ct = req.headers.get("content-type") ?? "";
 
     let email = "";
@@ -71,8 +100,6 @@ export async function POST(req: NextRequest) {
       password = String(formData.get("password") ?? "");
     }
 
-    // Use the public site URL so redirects work through the nginx proxy
-    const siteUrl = process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "https://sirboxalotmovers.com";
     const token = await verifyAndMintToken(email, password);
 
     if (!token) {
