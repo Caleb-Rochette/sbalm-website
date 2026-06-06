@@ -5,6 +5,7 @@ import fs from "fs";
 import path from "path";
 import { addLead } from "@/lib/crm-store";
 import { prisma } from "@/lib/crm/db";
+import { sendTelegramAlert } from "@/lib/notify";
 
 export const runtime = "nodejs";
 
@@ -321,6 +322,13 @@ export async function POST(req: NextRequest) {
     addLead(transcript);
     saveLeadToCRM(sanitized, transcript).catch((e) => console.error("CRM lead error:", e));
     sendLeadEmail(transcript).catch((e) => console.error("Lead email error:", e));
+    const lead = extractLeadInfo(sanitized);
+    sendTelegramAlert(
+      `💬 New chat lead\n\n${lead.firstName} ${lead.lastName}` +
+        (lead.phone ? `\n📞 ${lead.phone}` : "") +
+        (lead.email ? `\n✉️ ${lead.email}` : "") +
+        `\n\n(captured via the website chat widget)`
+    ).catch(() => {});
   }
 
   return NextResponse.json({ reply: cleanReply, leadCaptured });

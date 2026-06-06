@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { prisma } from "@/lib/crm/db";
+import { sendTelegramAlert } from "@/lib/notify";
 
 export const runtime = "nodejs";
 
@@ -232,6 +233,17 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+
+  // Ping the owner's phone via Telegram (non-fatal; no-op if not configured).
+  await sendTelegramAlert(
+    `🚚 New quote request\n\n` +
+      `${name}\n` +
+      `📞 ${phone}\n` +
+      `✉️ ${email}\n\n` +
+      `${moveSize} · ${serviceType}\n` +
+      `📅 ${formattedDate}` +
+      (message?.trim() ? `\n📝 ${message.trim()}` : "")
+  );
 
   // Instant, personal confirmation to the customer (autoresponder). Non-fatal —
   // a failure here must never break the lead or the visitor's success screen.
