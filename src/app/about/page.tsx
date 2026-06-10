@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "About Us",
   description:
     "Meet the team behind Sir Box a Lot Movers. Full-service local movers based in Gig Harbor, WA — built on hustle, honesty, and careful hands.",
+  robots: { index: false, follow: false }, // hidden/placeholder — don't index until filled out
 };
 
 const trustPoints = [
