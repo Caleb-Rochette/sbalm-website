@@ -4,7 +4,7 @@ import Image from "next/image";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/services", label: "Services" },
-  { href: "/about", label: "About" },
+  // { href: "/about", label: "About" }, // hidden until the About page is filled out
   { href: "/service-area", label: "Service Area" },
   { href: "/contact", label: "Contact" },
 ];
