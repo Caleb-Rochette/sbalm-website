@@ -90,10 +90,16 @@ model Customer {
   status    CustomerStatus @default(LEAD)
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
+  deletedAt DateTime?
 
   jobs         Job[]
   interactions Interaction[]
   quotes       Quote[]
+
+  @@index([status])
+  @@index([email])
+  @@index([phone])
+  @@index([deletedAt])
 }
 
 model Job {
@@ -107,17 +113,23 @@ model Job {
   destinationAddress String
   estimatedHours     Float
   actualHours        Float?
-  pricePerHour       Float
-  totalCharged       Float?
+  pricePerHour       Decimal     @db.Decimal(10, 2)
+  totalCharged       Decimal?    @db.Decimal(10, 2)
   truckRentalCompany String?
   status             JobStatus   @default(SCHEDULED)
   notes              String?
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
+  deletedAt          DateTime?
 
   customer     Customer      @relation(fields: [customerId], references: [id])
   employees    EmployeeJob[]
   interactions Interaction[]
+
+  @@index([customerId])
+  @@index([status])
+  @@index([jobDate])
+  @@index([deletedAt])
 }
 
 model EmployeeJob {
@@ -166,7 +178,7 @@ model Quote {
   serviceType        ServiceType
   originAddress      String
   destinationAddress String
-  quotedPrice        Float
+  quotedPrice        Decimal     @db.Decimal(10, 2)
   status             QuoteStatus @default(SENT)
   notes              String?
   createdAt          DateTime    @default(now())
@@ -176,8 +188,8 @@ model Quote {
 }
 
 model BusinessSettings {
-  id            Int   @id @default(1)
-  rate2ManCrew  Float @default(125)
-  rate3ManCrew  Float @default(175)
-  minimumHours  Float @default(2)
+  id           Int     @id @default(1)
+  rate2ManCrew Decimal @default(125) @db.Decimal(10, 2)
+  rate3ManCrew Decimal @default(175) @db.Decimal(10, 2)
+  minimumHours Float   @default(2)
 }

@@ -106,7 +106,7 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
                     <td className="px-5 py-3 text-gray-600">{j.crewSize}-man</td>
                     <td className="px-5 py-3 text-gray-600">{j.jobTime}</td>
                     <td className="px-5 py-3 text-gray-600">
-                      {j.totalCharged ? fmtMoney(j.totalCharged) : fmtMoney(j.estimatedHours * j.pricePerHour)}
+                      {j.totalCharged ? fmtMoney(j.totalCharged.toNumber()) : fmtMoney(j.estimatedHours * j.pricePerHour.toNumber())}
                     </td>
                     <td className="px-5 py-3">
                       <Link href={`/crm/jobs/${j.id}`}>

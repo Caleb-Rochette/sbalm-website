@@ -17,6 +17,7 @@ export async function GET(req: Request) {
 
   const now = new Date();
   const where = {
+    deletedAt: null,
     ...(customerId ? { customerId } : {}),
     ...(status ? { status } : {}),
     ...(upcoming ? { jobDate: { gte: now } } : {}),

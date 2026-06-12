@@ -16,6 +16,7 @@ export async function GET(req: Request) {
   const take = Math.min(200, Math.max(1, parseInt(searchParams.get("take") ?? "25")));
 
   const where = {
+    deletedAt: null,
     ...(q ? {
       OR: [
         { firstName: { contains: q, mode: "insensitive" as const } },

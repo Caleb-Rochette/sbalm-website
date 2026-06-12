@@ -95,7 +95,7 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
                     <td className="px-5 py-3 text-gray-600">{SERVICE_LABELS[q.serviceType]}</td>
                     <td className="px-5 py-3 text-gray-600">{q.crewSize}-man</td>
                     <td className="px-5 py-3 text-gray-600">{q.estimatedHours} hrs</td>
-                    <td className="px-5 py-3 font-semibold text-gray-900">{fmtMoney(q.quotedPrice)}</td>
+                    <td className="px-5 py-3 font-semibold text-gray-900">{fmtMoney(q.quotedPrice.toNumber())}</td>
                     <td className="px-5 py-3 text-gray-400">{fmtDate(q.createdAt)}</td>
                     <td className="px-5 py-3"><StatusBadge status={q.status} type="quote" /></td>
                     <td className="px-5 py-3">

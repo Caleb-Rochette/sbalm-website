@@ -39,7 +39,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
 
   if (!job) notFound();
 
-  const estimated = job.estimatedHours * job.pricePerHour;
+  const estimated = job.estimatedHours * job.pricePerHour.toNumber();
   const charged   = job.totalCharged;
 
   return (
@@ -96,7 +96,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
               </div>
               <div>
                 <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold">Rate</p>
-                <p className="text-gray-700 mt-0.5">{fmtMoney(job.pricePerHour)}/hr</p>
+                <p className="text-gray-700 mt-0.5">{fmtMoney(job.pricePerHour.toNumber())}/hr</p>
               </div>
               <div>
                 <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold">Est. Total</p>
@@ -104,7 +104,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
               </div>
               <div>
                 <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold">Amount Charged</p>
-                <p className="font-bold text-brand-navy mt-0.5">{fmtMoney(charged)}</p>
+                <p className="font-bold text-brand-navy mt-0.5">{fmtMoney(charged?.toNumber() ?? null)}</p>
               </div>
               {job.truckRentalCompany && (
                 <div>

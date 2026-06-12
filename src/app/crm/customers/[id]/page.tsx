@@ -99,7 +99,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                       <p className="text-sm font-semibold text-gray-900">
                         {j.jobDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} · {j.jobTime}
                       </p>
-                      <p className="text-xs text-gray-400">{j.crewSize}-man crew · {fmtMoney(j.totalCharged ?? j.estimatedHours * j.pricePerHour)}</p>
+                      <p className="text-xs text-gray-400">{j.crewSize}-man crew · {fmtMoney(j.totalCharged?.toNumber() ?? j.estimatedHours * j.pricePerHour.toNumber())}</p>
                     </div>
                     <StatusBadge status={j.status} type="job" />
                   </Link>
@@ -121,7 +121,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                 {customer.quotes.map(q => (
                   <div key={q.id} className="flex items-center gap-3 px-5 py-3">
                     <div className="flex-1">
-                      <p className="text-sm font-semibold text-gray-900">{fmtMoney(q.quotedPrice)}</p>
+                      <p className="text-sm font-semibold text-gray-900">{fmtMoney(q.quotedPrice.toNumber())}</p>
                       <p className="text-xs text-gray-400">Sent {fmtDate(q.createdAt)}{q.expiresAt ? ` · Expires ${fmtDate(q.expiresAt)}` : ""}</p>
                     </div>
                     <StatusBadge status={q.status} type="quote" />

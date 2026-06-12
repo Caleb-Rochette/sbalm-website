@@ -1,37 +1,18 @@
 // CRM ONLY
 import { auth } from "@/auth";
-import fs from "fs";
-import path from "path";
+import { prisma } from "@/lib/crm/db";
+import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Chat Leads — Sir Box a Lot CRM" };
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-interface LeadEntry {
-  timestamp: string;
-  transcript: string;
-}
-
-function parseLeadsLog(raw: string): LeadEntry[] {
-  const separator = "=".repeat(60);
-  const blocks = raw.split(separator).map(s => s.trim()).filter(Boolean);
-  const entries: LeadEntry[] = [];
-  for (let i = 0; i + 1 < blocks.length; i += 2) {
-    const timestamp = blocks[i];
-    const transcript = blocks[i + 1];
-    if (timestamp && transcript) entries.push({ timestamp, transcript });
-  }
-  return entries.reverse();
-}
-
-function fmtTimestamp(iso: string) {
-  try {
-    return new Date(iso).toLocaleString("en-US", {
-      weekday: "short", month: "short", day: "numeric",
-      hour: "numeric", minute: "2-digit", hour12: true,
-    });
-  } catch { return iso; }
+function fmtTimestamp(date: Date) {
+  return date.toLocaleString("en-US", {
+    weekday: "short", month: "short", day: "numeric",
+    hour: "numeric", minute: "2-digit", hour12: true,
+  });
 }
 
 function TranscriptLine({ line }: { line: string }) {
@@ -57,46 +38,76 @@ function TranscriptLine({ line }: { line: string }) {
 export default async function LeadsLogPage() {
   await auth();
 
-  const logPath = path.join(process.cwd(), "leads.log");
-  const entries: LeadEntry[] = fs.existsSync(logPath)
-    ? parseLeadsLog(fs.readFileSync(logPath, "utf8"))
-    : [];
+  const leads = await prisma.customer.findMany({
+    where: { source: "WEBSITE_CHAT", deletedAt: null },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      phone: true,
+      status: true,
+      notes: true,
+      createdAt: true,
+    },
+  });
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="mb-6">
         <h1 className="font-heading font-extrabold text-2xl text-brand-navy">Chat Leads</h1>
         <p className="text-gray-400 text-sm mt-0.5">
-          {entries.length} lead{entries.length !== 1 ? "s" : ""} captured from the website chatbot
+          {leads.length} lead{leads.length !== 1 ? "s" : ""} captured from the website chatbot
         </p>
       </div>
 
-      {entries.length === 0 ? (
+      {leads.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-10 text-center">
           <p className="text-gray-400">No leads captured yet.</p>
-          <p className="text-gray-300 text-sm mt-1">They&apos;ll appear here once a visitor shares their contact info in the chat.</p>
+          <p className="text-gray-300 text-sm mt-1">
+            They&apos;ll appear here once a visitor shares their contact info in the chat.
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
-          {entries.map((entry, i) => {
-            const lines = entry.transcript.split("\n").filter(Boolean);
+          {leads.map((lead) => {
+            const transcriptLines = (lead.notes ?? "")
+              .split("\n")
+              .filter((l) => l.startsWith("Visitor:") || l.startsWith("Assistant:"));
+            const contactLine = [lead.phone, lead.email].filter(Boolean).join(" · ");
+
             return (
-              <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <div key={lead.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
                       Chat Lead
                     </span>
                     <span className="text-sm font-medium text-gray-700">
-                      {fmtTimestamp(entry.timestamp)}
+                      {lead.firstName} {lead.lastName}
                     </span>
+                    {contactLine && (
+                      <span className="text-xs text-gray-400">{contactLine}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-gray-400">{fmtTimestamp(lead.createdAt)}</span>
+                    <Link
+                      href={`/crm/customers/${lead.id}`}
+                      className="text-xs text-brand-navy hover:underline font-medium"
+                    >
+                      View in CRM →
+                    </Link>
                   </div>
                 </div>
-                <div className="px-5 py-4 space-y-2">
-                  {lines.map((line, j) => (
-                    <TranscriptLine key={j} line={line} />
-                  ))}
-                </div>
+                {transcriptLines.length > 0 && (
+                  <div className="px-5 py-4 space-y-2">
+                    {transcriptLines.map((line, j) => (
+                      <TranscriptLine key={j} line={line} />
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })}

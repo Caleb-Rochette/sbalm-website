@@ -58,6 +58,6 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   if (!session) return err("Unauthorized.", 401);
   const { id } = await params;
 
-  await prisma.job.delete({ where: { id } }).catch(() => null);
+  await prisma.job.update({ where: { id }, data: { deletedAt: new Date() } }).catch(() => null);
   return ok({ deleted: true });
 }

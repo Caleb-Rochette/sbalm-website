@@ -55,19 +55,7 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   const exists = await prisma.customer.findUnique({ where: { id }, select: { id: true } });
   if (!exists) return err("Customer not found.", 404);
 
-  // Cascade delete: remove the customer's related records, then the customer
-  // itself, in one transaction so it can't half-complete. (Interactions carry
-  // customerId even when tied to a job, so deleting by customerId covers them.)
-  const jobs = await prisma.job.findMany({ where: { customerId: id }, select: { id: true } });
-  const jobIds = jobs.map((j) => j.id);
-
-  await prisma.$transaction([
-    prisma.interaction.deleteMany({ where: { customerId: id } }),
-    prisma.quote.deleteMany({ where: { customerId: id } }),
-    ...(jobIds.length ? [prisma.employeeJob.deleteMany({ where: { jobId: { in: jobIds } } })] : []),
-    prisma.job.deleteMany({ where: { customerId: id } }),
-    prisma.customer.delete({ where: { id } }),
-  ]);
+  await prisma.customer.update({ where: { id }, data: { deletedAt: new Date() } });
 
   return ok({ deleted: true });
 }

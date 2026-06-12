@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { Resend } from "resend";
-import fs from "fs";
-import path from "path";
-import { addLead } from "@/lib/crm-store";
 import { prisma } from "@/lib/crm/db";
 import { sendTelegramAlert } from "@/lib/notify";
 
@@ -227,16 +224,6 @@ async function saveLeadToCRM(messages: Msg[], transcript: string) {
   }
 }
 
-function saveLeadToFile(transcript: string) {
-  try {
-    const logFile = path.join(process.cwd(), "leads.log");
-    const entry = `\n${"=".repeat(60)}\n${new Date().toISOString()}\n${"=".repeat(60)}\n${transcript}\n`;
-    fs.appendFileSync(logFile, entry, { encoding: "utf8", mode: 0o600 });
-  } catch (e) {
-    console.error("Lead file save error:", e);
-  }
-}
-
 async function sendLeadEmail(transcript: string) {
   const toEmail = process.env.RESEND_TO_EMAIL;
   const fromEmail = process.env.RESEND_FROM_EMAIL ?? "onboarding@resend.dev";
@@ -318,8 +305,6 @@ export async function POST(req: NextRequest) {
     const transcript = sanitized
       .map((m) => `${m.role === "user" ? "Visitor" : "Assistant"}: ${m.content}`)
       .join("\n") + `\nAssistant: ${cleanReply}`;
-    saveLeadToFile(transcript);
-    addLead(transcript);
     saveLeadToCRM(sanitized, transcript).catch((e) => console.error("CRM lead error:", e));
     sendLeadEmail(transcript).catch((e) => console.error("Lead email error:", e));
     const lead = extractLeadInfo(sanitized);
