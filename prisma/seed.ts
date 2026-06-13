@@ -168,6 +168,41 @@ async function main() {
   });
   console.log("✓ 1 quote");
 
+  // Stage 1: a staff + field user, a Project, and field time/expense entries.
+  const edna = await prisma.user.upsert({
+    where: { email: "edna@sirboxalotmovers.com" },
+    update: {},
+    create: { email: "edna@sirboxalotmovers.com", name: "Edna", role: "STAFF", hashedPassword: await bcrypt.hash("staff1234", 12) },
+  });
+  const gabriel = await prisma.user.upsert({
+    where: { email: "gabriel@sirboxalotmovers.com" },
+    update: {},
+    create: { email: "gabriel@sirboxalotmovers.com", name: "Gabriel", role: "FIELD", hashedPassword: await bcrypt.hash("field1234", 12) },
+  });
+
+  const project1 = await prisma.project.upsert({
+    where: { id: "proj-1" },
+    update: {},
+    create: {
+      id: "proj-1", customerId: c1.id, status: "SCHEDULED",
+      moveDate: new Date("2026-05-10"),
+      originAddress: "1234 Elm St, Dallas, TX 75201",
+      destinationAddress: "9090 Maple Dr, Frisco, TX 75035",
+      quoteAmount: 962.50, depositAmount: 200, depositPaid: true,
+      signedAt: new Date("2026-05-06"),
+    },
+  });
+  await prisma.job.update({ where: { id: job1.id }, data: { projectId: project1.id, assignedToId: gabriel.id } });
+  await prisma.timeEntry.upsert({
+    where: { id: "time-1" }, update: {},
+    create: { id: "time-1", jobId: job1.id, userId: gabriel.id, hours: 5.5, description: "On-site move", date: new Date("2026-05-10") },
+  });
+  await prisma.expense.upsert({
+    where: { id: "exp-1" }, update: {},
+    create: { id: "exp-1", jobId: job1.id, userId: gabriel.id, amount: 89.0, category: "Truck rental", date: new Date("2026-05-10") },
+  });
+  console.log(`✓ Stage 1: ${edna.role}/${gabriel.role} users, 1 project, time + expense`);
+
   console.log("\n✅ Seed complete!");
   console.log(`   Login: ${email}`);
   console.log(`   Password: ${password}`);

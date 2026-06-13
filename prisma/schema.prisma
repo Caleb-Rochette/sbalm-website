@@ -11,6 +11,8 @@ datasource db {
 enum UserRole {
   ADMIN
   STAFF
+  FIELD
+  CUSTOMER
 }
 
 enum CustomerStatus {
@@ -67,15 +69,22 @@ enum InteractionType {
 model User {
   id                  String    @id @default(uuid())
   email               String    @unique
-  hashedPassword      String
+  hashedPassword      String? // null for OAuth (Google) users; set only for password/credentials accounts
   name                String
-  role                UserRole  @default(STAFF)
+  role                UserRole  @default(CUSTOMER)
+  customerId          String?   @unique // portal users link to their Customer record (Stage 7)
   createdAt           DateTime  @default(now())
   lastLoginAt         DateTime?
   failedLoginAttempts Int       @default(0)
   lockedUntil         DateTime?
 
+  customer     Customer?     @relation(fields: [customerId], references: [id])
   interactions Interaction[]
+  assignedJobs Job[]         @relation("AssignedWorkOrders")
+  timeEntries  TimeEntry[]
+  expenses     Expense[]
+
+  @@index([role])
 }
 
 model Customer {
@@ -88,6 +97,7 @@ model Customer {
   notes     String?
   source    CustomerSource @default(WEBSITE_FORM)
   status    CustomerStatus @default(LEAD)
+  zohoCrmId String? // external Zoho CRM record id (Stage 2/8 sync)
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
   deletedAt DateTime?
@@ -95,16 +105,62 @@ model Customer {
   jobs         Job[]
   interactions Interaction[]
   quotes       Quote[]
+  projects     Project[]
+  portalUser   User?
 
   @@index([status])
   @@index([email])
   @@index([phone])
+  @@index([zohoCrmId])
   @@index([deletedAt])
 }
 
+enum ProjectStatus {
+  PENDING
+  QUOTED
+  SIGNED
+  DEPOSIT_PAID
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+// The deal/lifecycle wrapper for a move (pending → quoted → signed → deposit paid
+// → scheduled → completed). One Project per move; its field execution lives in
+// Job(s) (the work orders).
+model Project {
+  id                 String        @id @default(uuid())
+  customerId         String
+  status             ProjectStatus @default(PENDING)
+  moveDate           DateTime?
+  originAddress      String?
+  destinationAddress String?
+  quoteAmount        Decimal?      @db.Decimal(10, 2)
+  depositAmount      Decimal?      @db.Decimal(10, 2)
+  depositPaid        Boolean       @default(false)
+  signedAt           DateTime?
+  completedAt        DateTime?
+  zohoSignDocId      String? // Stage 3 (Zoho Sign document id)
+  stripeInvoiceId    String? // Stage 4 (Stripe invoice id)
+  notes              String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  deletedAt          DateTime?
+
+  customer   Customer @relation(fields: [customerId], references: [id])
+  workOrders Job[]
+
+  @@index([customerId])
+  @@index([status])
+  @@index([deletedAt])
+}
+
+// A Job is the work order — the scheduled field execution of a Project.
 model Job {
   id                 String      @id @default(uuid())
   customerId         String
+  projectId          String?
+  assignedToId       String?
   jobDate            DateTime
   jobTime            String
   crewSize           Int
@@ -123,10 +179,16 @@ model Job {
   deletedAt          DateTime?
 
   customer     Customer      @relation(fields: [customerId], references: [id])
+  project      Project?      @relation(fields: [projectId], references: [id])
+  assignedTo   User?         @relation("AssignedWorkOrders", fields: [assignedToId], references: [id])
   employees    EmployeeJob[]
   interactions Interaction[]
+  timeEntries  TimeEntry[]
+  expenses     Expense[]
 
   @@index([customerId])
+  @@index([projectId])
+  @@index([assignedToId])
   @@index([status])
   @@index([jobDate])
   @@index([deletedAt])
@@ -185,6 +247,41 @@ model Quote {
   expiresAt          DateTime?
 
   customer Customer @relation(fields: [customerId], references: [id])
+}
+
+// Field-crew time logging (Stage 5) — hours logged against a work order (Job).
+model TimeEntry {
+  id          String   @id @default(uuid())
+  jobId       String
+  userId      String
+  hours       Decimal  @db.Decimal(5, 2)
+  description String?
+  date        DateTime
+  createdAt   DateTime @default(now())
+
+  job  Job  @relation(fields: [jobId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([jobId])
+  @@index([userId])
+}
+
+// Field-crew expense + receipt logging (Stage 5).
+model Expense {
+  id         String   @id @default(uuid())
+  jobId      String
+  userId     String
+  amount     Decimal  @db.Decimal(10, 2)
+  category   String?
+  receiptUrl String?
+  date       DateTime
+  createdAt  DateTime @default(now())
+
+  job  Job  @relation(fields: [jobId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([jobId])
+  @@index([userId])
 }
 
 model BusinessSettings {

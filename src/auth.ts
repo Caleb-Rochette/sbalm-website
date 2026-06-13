@@ -1,6 +1,7 @@
 // CRM ONLY — full auth config (Node.js runtime only — NOT used in middleware)
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
 import { authConfig } from "@/auth.config";
 import { prisma } from "@/lib/crm/db";
 import bcrypt from "bcryptjs";
@@ -17,7 +18,34 @@ declare module "next-auth" {
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
+  callbacks: {
+    ...authConfig.callbacks,
+    // Node-runtime jwt (has Prisma): on Google sign-in, upsert the user and
+    // attach our DB id + role. Credentials sign-ins already carry both. New
+    // Google users default to CUSTOMER (least privilege) until promoted.
+    async jwt({ token, user, account }) {
+      if (account?.provider === "google" && user?.email) {
+        const email = user.email.toLowerCase();
+        const dbUser = await prisma.user.upsert({
+          where:  { email },
+          update: { name: user.name ?? undefined, lastLoginAt: new Date() },
+          create: { email, name: user.name ?? email, role: "CUSTOMER" },
+        });
+        token.id = dbUser.id;
+        token.role = dbUser.role;
+      } else if (user) {
+        token.id = (user as { id: string }).id;
+        token.role = (user as { role: UserRole }).role;
+      }
+      return token;
+    },
+  },
   providers: [
+    // Google OAuth (field crew + customer portal). Only enabled when creds are
+    // configured, so the app still runs without them.
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [Google({ clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET })]
+      : []),
     Credentials({
       credentials: {
         email:    { label: "Email",    type: "email"    },

@@ -18,6 +18,16 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/crm/login", req.url));
   }
 
+  // Back-office (/crm, /api/crm) is ADMIN/STAFF only — field crew and customers
+  // who sign in via Google are kept out (their views come in later stages).
+  const role = req.auth?.user?.role;
+  if (role !== "ADMIN" && role !== "STAFF") {
+    if (pathname.startsWith("/api/crm")) {
+      return NextResponse.json({ success: false, error: "Forbidden." }, { status: 403 });
+    }
+    return NextResponse.redirect(new URL("/crm/login?error=forbidden", req.url));
+  }
+
   return NextResponse.next();
 });
 
