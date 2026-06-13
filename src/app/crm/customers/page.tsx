@@ -23,6 +23,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   const take   = 25;
 
   const where = {
+    deletedAt: null,
     ...(q ? {
       OR: [
         { firstName: { contains: q, mode: "insensitive" as const } },

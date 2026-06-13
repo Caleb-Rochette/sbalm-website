@@ -24,7 +24,10 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
   const page   = Math.max(1, parseInt(sp.page ?? "1"));
   const take   = 25;
 
-  const where = status ? { status: status as never } : {};
+  const where = {
+    customer: { deletedAt: null },
+    ...(status ? { status: status as never } : {}),
+  };
 
   const [quotes, total] = await Promise.all([
     prisma.quote.findMany({

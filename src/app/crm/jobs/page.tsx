@@ -27,6 +27,7 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
 
   const now = new Date();
   const where = {
+    deletedAt: null,
     ...(status ? { status } : {}),
     ...(upcoming ? { jobDate: { gte: now }, status: { in: ["SCHEDULED", "IN_PROGRESS"] as JobStatus[] } } : {}),
   };

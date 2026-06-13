@@ -57,9 +57,9 @@ export default function CustomerEditForm({
     if (counts.quotes) related.push(`${counts.quotes} quote${counts.quotes === 1 ? "" : "s"}`);
     if (counts.interactions) related.push(`${counts.interactions} interaction${counts.interactions === 1 ? "" : "s"}`);
     const extra = related.length
-      ? `\n\nThis will also permanently delete ${related.join(", ")}.`
+      ? ` Their ${related.join(", ")} stay on file.`
       : "";
-    if (!confirm(`Delete ${customer.firstName} ${customer.lastName}?${extra}\n\nThis cannot be undone.`)) return;
+    if (!confirm(`Remove ${customer.firstName} ${customer.lastName} from your lists? Their history is kept — nothing is permanently deleted.${extra}`)) return;
     setDeleting(true);
     setError("");
     const res = await fetch(`/api/crm/customers/${customer.id}`, { method: "DELETE" });

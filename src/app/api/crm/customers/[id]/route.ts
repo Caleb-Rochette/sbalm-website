@@ -55,7 +55,14 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   const exists = await prisma.customer.findUnique({ where: { id }, select: { id: true } });
   if (!exists) return err("Customer not found.", 404);
 
-  await prisma.customer.update({ where: { id }, data: { deletedAt: new Date() } });
+  // Soft-delete the customer and their jobs together, so an archived customer's
+  // jobs don't linger in the jobs list (which filters on job.deletedAt). History
+  // is preserved for future billing; nothing is hard-deleted.
+  const now = new Date();
+  await prisma.$transaction([
+    prisma.job.updateMany({ where: { customerId: id, deletedAt: null }, data: { deletedAt: now } }),
+    prisma.customer.update({ where: { id }, data: { deletedAt: now } }),
+  ]);
 
   return ok({ deleted: true });
 }

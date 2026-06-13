@@ -30,23 +30,24 @@ export default async function DashboardPage() {
   const weekEnd = new Date(now); weekEnd.setDate(weekEnd.getDate() + 7);
 
   const [todayJobs, weekJobs, openLeads, totalCustomers, upcomingJobs, recentActivity, openLeadsList] = await Promise.all([
-    prisma.job.count({ where: { jobDate: { gte: todayStart, lte: todayEnd } } }),
-    prisma.job.count({ where: { jobDate: { gte: todayStart, lte: weekEnd }, status: { in: ["SCHEDULED", "IN_PROGRESS"] } } }),
-    prisma.customer.count({ where: { status: "LEAD" } }),
-    prisma.customer.count(),
+    prisma.job.count({ where: { deletedAt: null, jobDate: { gte: todayStart, lte: todayEnd } } }),
+    prisma.job.count({ where: { deletedAt: null, jobDate: { gte: todayStart, lte: weekEnd }, status: { in: ["SCHEDULED", "IN_PROGRESS"] } } }),
+    prisma.customer.count({ where: { deletedAt: null, status: "LEAD" } }),
+    prisma.customer.count({ where: { deletedAt: null } }),
     prisma.job.findMany({
-      where: { jobDate: { gte: todayStart, lte: weekEnd }, status: { in: ["SCHEDULED", "IN_PROGRESS"] } },
+      where: { deletedAt: null, jobDate: { gte: todayStart, lte: weekEnd }, status: { in: ["SCHEDULED", "IN_PROGRESS"] } },
       include: { customer: true },
       orderBy: { jobDate: "asc" },
       take: 10,
     }),
     prisma.interaction.findMany({
+      where: { customer: { deletedAt: null } },
       include: { customer: true, createdBy: true },
       orderBy: { createdAt: "desc" },
       take: 10,
     }),
     prisma.customer.findMany({
-      where: { status: "LEAD" },
+      where: { deletedAt: null, status: "LEAD" },
       orderBy: { createdAt: "desc" },
       take: 8,
     }),
