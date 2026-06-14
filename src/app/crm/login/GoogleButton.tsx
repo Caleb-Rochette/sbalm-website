@@ -1,12 +1,10 @@
-// CRM ONLY
-"use client";
-import { signIn } from "next-auth/react";
-
+// CRM ONLY — plain link (top-level navigation) to the server route that starts
+// Google OAuth. A real navigation avoids the cross-origin fetch/CORS preflight
+// that blocked the client-side signIn() call.
 export default function GoogleButton() {
   return (
-    <button
-      type="button"
-      onClick={() => signIn("google", { callbackUrl: "/crm/dashboard" })}
+    <a
+      href="/google-login"
       className="w-full flex items-center justify-center gap-2 border border-gray-300 rounded-xl py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
     >
       <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true">
@@ -16,6 +14,6 @@ export default function GoogleButton() {
         <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
       </svg>
       Continue with Google
-    </button>
+    </a>
   );
 }
